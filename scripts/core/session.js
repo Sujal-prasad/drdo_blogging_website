@@ -69,6 +69,7 @@ window.Session = (function () {
 
   async function signOut() {
     if (live && window.sb) await window.sb.auth.signOut();
+    if (window.Paywall) window.Paywall.clearState();
     window.location.href = window.APP_CONFIG.LOGIN_PATH;
   }
 

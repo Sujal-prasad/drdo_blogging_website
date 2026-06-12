@@ -21,6 +21,8 @@ window.Paywall = (function () {
   function setMember(v) { localStorage.setItem(MEMBER_KEY, v ? "true" : "false"); }
   // cancel membership and reset the free-article allowance back to a fresh 5
   function cancel() { setMember(false); localStorage.removeItem(READS_KEY); }
+  // clear all paywall state (used on sign out)
+  function clearState() { setMember(false); localStorage.removeItem(READS_KEY); }
   function remainingFree() { return Math.max(0, FREE_LIMIT - getReads().length); }
   function recordRead(id) { const r = getReads(); if (!r.includes(id)) { r.push(id); saveReads(r); } }
 
@@ -246,5 +248,5 @@ window.Paywall = (function () {
     });
   }
 
-  return { FREE_LIMIT, PRICE, isMember, setMember, cancel, subscribe, remainingFree, getReads, recordRead, isLocked, gate };
+  return { FREE_LIMIT, PRICE, isMember, setMember, cancel, clearState, subscribe, remainingFree, getReads, recordRead, isLocked, gate };
 })();

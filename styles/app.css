@@ -405,7 +405,7 @@ body.pay-locked { overflow: hidden; }
 /* cover images (feed cards + reader) */
 .card-cover, .article-cover { background-size: cover; background-position: center; }
 .card-cover .card-emoji, .article-cover .cover-emoji {
-  position: relative; z-index: 1;
+  position: absolute; bottom: 10px; left: 10px; z-index: 1;
   filter: drop-shadow(0 4px 14px rgba(0,0,0,.45));
 }
 
