@@ -34,6 +34,7 @@
   <header class="app-topbar">
     <a class="brand" href="index.html">Midium<span class="dot">.</span></a>
     <div class="topbar-actions">
+      <button class="btn btn--ghost" id="memberBtn" type="button" hidden></button>
       <a class="btn btn--accent" href="write.html">✍️ Write</a>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">🌙</button>
       <button class="btn btn--ghost" id="signout" type="button">Sign out</button>
@@ -58,6 +59,8 @@
     <div class="cards" id="cards"></div>
   </main>
 
+  <div class="toast-stack" id="toastStack"></div>
+
   <!-- scripts -->
   <script src="scripts/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -66,6 +69,7 @@
   <script src="scripts/core/theme.js"></script>
   <script src="scripts/data/articles.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="scripts/feed/paywall.js"></script>
   <script src="scripts/feed/feed.js"></script>
 </body>
 </html>

@@ -10,8 +10,20 @@
   const esc = (s) => (s || "").replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-  const cover = (a) =>
-    `linear-gradient(135deg, ${a.accent}, color-mix(in srgb, ${a.accent} 50%, #000))`;
+  function toast(msg) {
+    const stack = $("#toastStack"); if (!stack) return;
+    const t = document.createElement("div");
+    t.className = "toast success";
+    t.innerHTML = `<span class="toast-icon">✅</span><span>${msg}</span>`;
+    stack.appendChild(t);
+    setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 300); }, 2600);
+  }
+
+  // a real cover photo tinted with the article's accent, or a plain gradient
+  const coverStyle = (a) =>
+    a.cover
+      ? `background-image: linear-gradient(135deg, ${a.accent}cc, ${a.accent}66), url('${a.cover}');`
+      : `background: linear-gradient(135deg, ${a.accent}, color-mix(in srgb, ${a.accent} 50%, #000));`;
 
   const fmtDate = (d) =>
     new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -22,9 +34,9 @@
     const claps = MidiumArticles.clapsFor(a);
     return `
       <a class="card" href="article.html?id=${encodeURIComponent(a.id)}">
-        <div class="card-cover" style="background:${cover(a)}">
+        <div class="card-cover" style="${coverStyle(a)}">
           ${a.userPost ? '<span class="you-badge">Your post</span>' : ""}
-          <span>${a.emoji || "📝"}</span>
+          <span class="card-emoji">${a.emoji || "📝"}</span>
         </div>
         <div class="card-body">
           <span class="card-tag">${esc(a.tag)}</span>
@@ -117,6 +129,23 @@
     }
 
     $("#signout").addEventListener("click", () => Session.signOut());
+
+    // membership button (shows only for members; click to cancel)
+    const memberBtn = $("#memberBtn");
+    function refreshMemberBtn() {
+      if (Paywall.isMember()) { memberBtn.hidden = false; memberBtn.textContent = "★ Member"; memberBtn.title = "Manage membership"; }
+      else { memberBtn.hidden = true; }
+    }
+    refreshMemberBtn();
+    memberBtn.addEventListener("click", () => {
+      if (!Paywall.isMember()) return;
+      if (confirm("Cancel your Midium membership?\n\nYou'll return to the free plan (5 free articles).")) {
+        Paywall.cancel();
+        refreshMemberBtn();
+        render();
+        toast("Membership cancelled. You're back on the free plan.");
+      }
+    });
 
     renderChips();
     render();

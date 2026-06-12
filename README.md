@@ -52,6 +52,7 @@ drdo_blogging_website/
 ├── login.html              # Auth page (sign in / sign up)
 ├── write.html              # Compose & publish your own article
 ├── article.html            # Read a single article (?id=…)
+├── reels.html              # Vertical snap-scroll "reels" view
 ├── README.md
 ├── .vscode/settings.json   # Live Server tweaks (stop self-refresh)
 ├── styles/
@@ -74,7 +75,8 @@ drdo_blogging_website/
 │       ├── feed.js              # Renders the feed + search/tag filters
 │       ├── write.js             # The composer (publish, draft autosave)
 │       ├── article.js           # The reader (clap, delete own post)
-│       └── paywall.js           # 5-free paywall + simulated Card/UPI/Net-banking checkout
+│       ├── paywall.js           # 5-free paywall + simulated Card/UPI/Net-banking checkout
+│       └── reels.js             # Vertical snap-scroll reels view
 └── assets/
     └── img/                # (images added as the project grows)
 ```
@@ -191,9 +193,29 @@ and **recency**. Just append to the array to add more seed content.
 - *To reset for testing:* clear the `midium-member` and `midium-reads` keys in the
   browser's localStorage (DevTools → Application → Local Storage).
 
-### Phase 4 — Reels-style reading
-- Vertical, snap-scrolling, full-screen article cards (like Reels) with the paywall
-  applied there too.
+### Phase 4 — Reels-style reading ✅ *(built)*
+- **`reels.html`** — a full-screen, vertical, **snap-scrolling** feed of articles (like
+  Reels/TikTok). Each panel uses the article's accent as a full-bleed gradient with the
+  title, subtitle, author, clap button, and a **Read full story** link.
+- Reached from the **📱 Reels** button in the feed topbar.
+- Paywall-aware: locked articles (past the 5-free limit) show a **🔒 Members only** badge;
+  opening one routes through the reader where the RazorPlay checkout enforces it.
+
+### Phase 5 — Real database (Supabase) *(planned)*
+Move articles, claps, reads, and membership out of `localStorage` into Supabase Postgres
+tables (with Row-Level Security) so published posts are **shared across all users and
+devices**. See the `profiles / articles / claps / reads / memberships` sketch above.
+
+### Phase 6 — Deploy to Vercel *(planned — do last)*
+The site is fully static, so Vercel deploys it with **no build step**:
+1. Push to GitHub → import the repo at **vercel.com** (Framework preset **Other**, no build
+   command, output dir `./`). Or use the **Vercel CLI**: `vercel` then `vercel --prod`.
+2. ⚠️ **Update Supabase → Authentication → URL Configuration** for the live domain: set
+   **Site URL** to `https://<your-app>.vercel.app` and add `https://<your-app>.vercel.app/**`
+   to **Redirect URLs**. (OAuth provider callbacks don't change — they point to Supabase.)
+3. The **anon key** in `scripts/config.js` is public by design (safe to ship) — no env vars
+   needed. Never commit a `service_role` key.
+4. Optional: add a `vercel.json` + `.gitignore` for a zero-config import.
 
 ---
 

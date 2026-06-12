@@ -1,7 +1,7 @@
 /* =========================================================
-   ARTICLE READER
-   - reads ?id= from the URL, renders the article
-   - clap button + delete (for your own posts)
+   READER (reel-style)
+   - opens the clicked article, then scrolls into the next one
+   - paywall enforced per article; pauses at the free limit
    ========================================================= */
 
 (function () {
@@ -9,7 +9,12 @@
   const esc = (s) => (s || "").replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-  const gradient = (c) => `linear-gradient(135deg, ${c}, color-mix(in srgb, ${c} 50%, #000))`;
+  const plainGradient = (c) => `linear-gradient(135deg, ${c}, color-mix(in srgb, ${c} 50%, #000))`;
+  // tint a real cover photo with the article's accent for an editorial look
+  function coverStyle(a) {
+    if (a.cover) return `background-image: linear-gradient(135deg, ${a.accent}cc, ${a.accent}66), url('${a.cover}');`;
+    return `background: ${plainGradient(a.accent)};`;
+  }
   const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
   const paragraphs = (body) =>
     esc(body).split(/\n{2,}/).map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
@@ -22,49 +27,113 @@
     setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 300); }, 2400);
   }
 
-  function render(a) {
+  const memberPill = `<span class="meter-pill member">★ Member · unlimited reading</span>`;
+  const ownPill = `<span class="meter-pill">Your post · always free</span>`;
+  const leftPill = (n) => `<span class="meter-pill">${n} of ${Paywall.FREE_LIMIT} free articles left</span>`;
+
+  const stories = $("#stories");
+  const sentinel = $("#sentinel");
+  let all = [], cursor = 0, loading = false, paused = false, ended = false, first = true;
+
+  function storyHTML(a) {
     const claps = MidiumArticles.clapsFor(a);
     const mins = a.readingTime || MidiumArticles.readingTime(a.body);
     const initial = esc((a.author || "?").trim().charAt(0).toUpperCase() || "?");
-
-    $("#article").innerHTML = `
-      <div class="article-cover" style="background:${gradient(a.accent)}">${a.emoji || "📝"}</div>
-      <span class="article-tag">${esc(a.tag)}</span>
-      <h1 class="article-title">${esc(a.title)}</h1>
-      ${a.dek ? `<p class="article-dek">${esc(a.dek)}</p>` : ""}
-      <div class="article-byline">
-        <span class="avatar" style="background:${gradient(a.accent)}">${initial}</span>
-        <div>
-          <div><strong>${esc(a.author)}</strong>${a.userPost ? " · your post" : ""}</div>
-          <div>${fmtDate(a.date)} · ${mins} min read</div>
+    return `
+      <article class="story" data-id="${esc(a.id)}">
+        <div class="article-cover" style="${coverStyle(a)}"><span class="cover-emoji">${a.emoji || "📝"}</span></div>
+        <span class="article-tag">${esc(a.tag)}</span>
+        <h1 class="article-title">${esc(a.title)}</h1>
+        ${a.dek ? `<p class="article-dek">${esc(a.dek)}</p>` : ""}
+        <div class="article-byline">
+          <span class="avatar" style="background:${plainGradient(a.accent)}">${initial}</span>
+          <div>
+            <div><strong>${esc(a.author)}</strong>${a.userPost ? " · your post" : ""}</div>
+            <div>${fmtDate(a.date)} · ${mins} min read</div>
+          </div>
         </div>
-      </div>
-      <div class="read-meter" id="readMeter"></div>
-      <div class="article-body">${paragraphs(a.body)}</div>
-      <div class="article-foot">
-        <button class="clap-btn" id="clap">👏 <span id="clapCount">${claps}</span></button>
-        ${a.userPost ? '<button class="danger-link" id="delete">Delete this post</button>' : ""}
-      </div>`;
+        <div class="read-meter"></div>
+        <div class="article-body">${paragraphs(a.body)}</div>
+        <div class="article-foot">
+          <button class="clap-btn">👏 <span class="clap-count">${claps}</span></button>
+          ${a.userPost ? '<button class="danger-link">Delete this post</button>' : ""}
+        </div>
+      </article>`;
+  }
 
-    $("#clap").addEventListener("click", () => {
+  function refreshMeter(storyEl, a) {
+    const meter = storyEl.querySelector(".read-meter");
+    if (!meter) return;
+    if (Paywall.isMember()) meter.innerHTML = memberPill;
+    else if (a.userPost) meter.innerHTML = ownPill;
+    else meter.innerHTML = leftPill(Paywall.remainingFree());
+  }
+
+  // membership just gained: unblur everything, refresh meters, resume scrolling
+  function onUnlock() {
+    document.querySelectorAll(".article-body.paywalled").forEach((el) => el.classList.remove("paywalled"));
+    stories.querySelectorAll(".story").forEach((el) => {
+      const a = all.find((x) => x.id === el.dataset.id);
+      if (a) refreshMeter(el, a);
+    });
+    paused = false;
+    loadNext();
+  }
+
+  function mountStory(a) {
+    if (!first) {
+      const sep = document.createElement("div");
+      sep.className = "story-sep";
+      sep.textContent = "Up next";
+      stories.appendChild(sep);
+    }
+    first = false;
+
+    const wrap = document.createElement("div");
+    wrap.innerHTML = storyHTML(a);
+    const storyEl = wrap.firstElementChild;
+    stories.appendChild(storyEl);
+    document.title = a.title + " · Midium";
+
+    const clap = storyEl.querySelector(".clap-btn");
+    clap.addEventListener("click", () => {
       const n = MidiumArticles.clap(a.id);
-      $("#clapCount").textContent = n;
-      const btn = $("#clap");
-      btn.classList.remove("bumped"); void btn.offsetWidth; btn.classList.add("bumped");
+      clap.querySelector(".clap-count").textContent = n;
+      clap.classList.remove("bumped"); void clap.offsetWidth; clap.classList.add("bumped");
     });
 
-    const del = $("#delete");
+    const del = storyEl.querySelector(".danger-link");
     if (del) del.addEventListener("click", () => {
       if (confirm("Delete this post? This can't be undone.")) {
         MidiumArticles.deleteArticle(a.id);
-        toast("Post deleted.");
-        setTimeout(() => { window.location.href = "index.html"; }, 700);
+        window.location.href = "index.html";
       }
     });
+
+    const gated = Paywall.gate(a, { blurTarget: storyEl.querySelector(".article-body"), onUnlock });
+    refreshMeter(storyEl, a);
+    return gated;
+  }
+
+  function loadNext() {
+    if (loading || paused || ended) return;
+    if (cursor >= all.length) {
+      ended = true;
+      const end = document.createElement("div");
+      end.className = "stories-end";
+      end.innerHTML = `<p>You've reached the end. 📭</p><a class="btn btn--accent" href="index.html">Back to the feed</a>`;
+      stories.appendChild(end);
+      return;
+    }
+    loading = true;
+    const gated = mountStory(all[cursor]);
+    cursor++;
+    if (gated) paused = true; // stop until they subscribe
+    loading = false;
   }
 
   function notFound() {
-    $("#article").innerHTML = `
+    stories.innerHTML = `
       <div class="empty" style="padding:80px 0">
         <h1 class="article-title" style="font-size:2rem">Story not found</h1>
         <p style="margin:12px 0 22px">We couldn't find that article. It may have been removed.</p>
@@ -75,25 +144,18 @@
   async function init() {
     const s = await Session.requireAuth();
     if (!s) return;
+    all = MidiumArticles.getAll();
     const id = new URLSearchParams(location.search).get("id");
-    const a = id ? MidiumArticles.getById(id) : null;
-    if (!a) { notFound(); return; }
+    const start = all.findIndex((x) => x.id === id);
+    if (start < 0) { notFound(); return; }
 
-    document.title = a.title + " · Midium";
-    render(a);
+    cursor = start;
+    loadNext(); // the clicked article
 
-    const meter = $("#readMeter");
-    const setMemberPill = () => { if (meter) meter.innerHTML = `<span class="meter-pill member">★ Member · unlimited reading</span>`; };
-
-    // Paywall: blur the body + open checkout if past the free limit.
-    Paywall.gate(a, { blurTarget: $(".article-body"), onUnlock: setMemberPill });
-
-    // Quota / membership indicator under the byline.
-    if (meter) {
-      if (Paywall.isMember()) setMemberPill();
-      else if (a.userPost)    meter.innerHTML = `<span class="meter-pill">Your post · always free</span>`;
-      else meter.innerHTML = `<span class="meter-pill">${Paywall.remainingFree()} of ${Paywall.FREE_LIMIT} free articles left</span>`;
-    }
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) loadNext();
+    }, { rootMargin: "400px" });
+    io.observe(sentinel);
   }
 
   init();

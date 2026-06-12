@@ -269,6 +269,48 @@
 .pay-success h2 { font-family: var(--serif); font-size: 1.6rem; margin-bottom: 6px; }
 .pay-success p { color: var(--ink-soft); }
 
+/* simulated net-banking bank page */
+.pay-card.bank-mode { padding: 0; overflow: hidden; }
+.bank-head {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #0b3d91; color: #fff; padding: 16px 22px;
+}
+.bank-name { font-weight: 800; font-size: 1.05rem; }
+.bank-secure { font-size: .74rem; opacity: .85; }
+.bank-body { padding: 24px 26px 26px; }
+.bank-body h3 { font-family: var(--serif); font-size: 1.3rem; margin-bottom: 16px; }
+.bank-body label { display: block; font-size: .8rem; font-weight: 600; color: var(--ink-soft); margin-bottom: 14px; }
+.bank-body input {
+  display: block; width: 100%; margin-top: 6px; padding: 11px 12px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--field-bg); color: var(--ink); outline: none;
+}
+.bank-body input:focus { border-color: var(--accent); }
+.bank-confirm { border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 18px; }
+.bank-confirm > div { display: flex; justify-content: space-between; gap: 12px; padding: 12px 14px; font-size: .92rem; }
+.bank-confirm > div:not(:last-child) { border-bottom: 1px solid var(--line); }
+.bank-confirm span { color: var(--ink-soft); }
+
+/* ---------- Reader: continuous "scroll to next" ---------- */
+#sentinel { height: 1px; }
+.story { animation: story-in .45s ease both; }
+@keyframes story-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.story-sep {
+  display: flex; align-items: center; gap: 14px;
+  margin: 60px 0 4px; color: var(--ink-soft);
+  font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+}
+.story-sep::before, .story-sep::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.stories-end { text-align: center; padding: 54px 0 90px; color: var(--ink-soft); }
+.stories-end p { margin-bottom: 16px; font-size: 1.05rem; }
+
+/* cover images (feed cards + reader) */
+.card-cover, .article-cover { background-size: cover; background-position: center; }
+.card-cover .card-emoji, .article-cover .cover-emoji {
+  position: relative; z-index: 1;
+  filter: drop-shadow(0 4px 14px rgba(0,0,0,.45));
+}
+
 @media (max-width: 600px) {
   .app-topbar { padding: 12px 16px; }
   .btn { padding: 8px 13px; }

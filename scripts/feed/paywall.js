@@ -11,13 +11,26 @@ window.Paywall = (function () {
   const MEMBER_KEY = "midium-member";
   const PRICE = "₹199";
 
+  const esc = (s) => (s || "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
   /* ---- state ---- */
   function getReads() { try { return JSON.parse(localStorage.getItem(READS_KEY)) || []; } catch (_) { return []; } }
   function saveReads(a) { localStorage.setItem(READS_KEY, JSON.stringify(a)); }
   function isMember() { return localStorage.getItem(MEMBER_KEY) === "true"; }
   function setMember(v) { localStorage.setItem(MEMBER_KEY, v ? "true" : "false"); }
+  // cancel membership and reset the free-article allowance back to a fresh 5
+  function cancel() { setMember(false); localStorage.removeItem(READS_KEY); }
   function remainingFree() { return Math.max(0, FREE_LIMIT - getReads().length); }
   function recordRead(id) { const r = getReads(); if (!r.includes(id)) { r.push(id); saveReads(r); } }
+
+  // would this article be locked? (no side effects — used for badges on the feed/reels)
+  function isLocked(article) {
+    if (isMember() || article.userPost) return false;
+    const reads = getReads();
+    if (reads.includes(article.id)) return false;
+    return reads.length >= FREE_LIMIT;
+  }
 
   /* ---- gate decision ----
      returns true if the article is locked (blurred + checkout shown).      */
@@ -141,36 +154,79 @@ window.Paywall = (function () {
       return "";
     }
 
+    // shared success step
+    function completePayment() {
+      setMember(true);
+      recordRead(article.id);
+      if (blurTarget) blurTarget.classList.remove("paywalled");
+      ov.querySelector(".pay-card").innerHTML = `
+        <div class="pay-success">
+          <div class="success-emoji">🎉</div>
+          <h2>You're a member!</h2>
+          <p>Enjoy unlimited reading. Welcome aboard.</p>
+        </div>`;
+      if (typeof confetti === "function") confetti({ particleCount: 140, spread: 100, origin: { y: 0.6 } });
+      setTimeout(() => {
+        ov.style.transition = "opacity .4s ease";
+        ov.style.opacity = "0";
+        setTimeout(() => { ov.remove(); if (onUnlock) onUnlock(); }, 400);
+      }, 1500);
+    }
+
+    // simulated net-banking: a mock bank portal (login -> confirm -> pay)
+    function showBankPage(bank) {
+      const card = ov.querySelector(".pay-card");
+      card.classList.add("bank-mode");
+      card.innerHTML = `
+        <div class="bank-head">
+          <span class="bank-name">🏦 ${esc(bank)}</span>
+          <span class="bank-secure">🔒 Secure NetBanking</span>
+        </div>
+        <div class="bank-body">
+          <h3>Log in to your account</h3>
+          <label>Customer / User ID<input id="bk-user" placeholder="Enter your user ID"></label>
+          <label>Password<input id="bk-pass" type="password" placeholder="Enter your password"></label>
+          <p class="pay-error" id="bk-err"></p>
+          <button class="pay-pay" id="bk-login">Log in</button>
+          <button class="pay-later" id="bk-back">Cancel</button>
+          <p class="pay-secure">Simulated bank page — type anything; no real login happens.</p>
+        </div>`;
+      card.querySelector("#bk-back").addEventListener("click", () => { window.location.href = "index.html"; });
+      card.querySelector("#bk-login").addEventListener("click", () => {
+        const u = card.querySelector("#bk-user").value.trim();
+        const p = card.querySelector("#bk-pass").value.trim();
+        if (!u || !p) { card.querySelector("#bk-err").textContent = "Enter your user ID and password."; return; }
+        const acct = Math.floor(1000 + Math.random() * 9000);
+        card.querySelector(".bank-body").outerHTML = `
+          <div class="bank-body">
+            <h3>Confirm payment</h3>
+            <div class="bank-confirm">
+              <div><span>Paying to</span><strong>Midium · RazorPlay</strong></div>
+              <div><span>Amount</span><strong>${PRICE}</strong></div>
+              <div><span>Account</span><strong>${esc(bank)} ••••${acct}</strong></div>
+            </div>
+            <button class="pay-pay" id="bk-confirm">Pay ${PRICE}</button>
+            <button class="pay-later" id="bk-cancel">Cancel</button>
+          </div>`;
+        card.querySelector("#bk-cancel").addEventListener("click", () => { window.location.href = "index.html"; });
+        card.querySelector("#bk-confirm").addEventListener("click", () => {
+          const b = card.querySelector("#bk-confirm");
+          b.disabled = true; b.innerHTML = `<span class="pay-spinner"></span> Authorising…`;
+          setTimeout(completePayment, 1500);
+        });
+      });
+    }
+
     // pay
     const payBtn = ov.querySelector("#pf-pay");
     payBtn.addEventListener("click", () => {
       const err = validate();
       if (err) { setError(err); return; }
       setError("");
+      if (method === "netbanking") { showBankPage(ov.querySelector("#pf-bank").value); return; }
       payBtn.disabled = true;
       payBtn.innerHTML = `<span class="pay-spinner"></span> Processing…`;
-
-      setTimeout(() => {
-        // success
-        setMember(true);
-        recordRead(article.id);
-        if (blurTarget) blurTarget.classList.remove("paywalled");
-
-        ov.querySelector(".pay-card").innerHTML = `
-          <div class="pay-success">
-            <div class="success-emoji">🎉</div>
-            <h2>You're a member!</h2>
-            <p>Enjoy unlimited reading. Welcome aboard.</p>
-          </div>`;
-        if (typeof confetti === "function") {
-          confetti({ particleCount: 140, spread: 100, origin: { y: 0.6 } });
-        }
-        setTimeout(() => {
-          ov.style.transition = "opacity .4s ease";
-          ov.style.opacity = "0";
-          setTimeout(() => { ov.remove(); if (onUnlock) onUnlock(); }, 400);
-        }, 1500);
-      }, 1600);
+      setTimeout(completePayment, 1600);
     });
 
     ov.querySelector("#pf-later").addEventListener("click", () => {
@@ -178,5 +234,5 @@ window.Paywall = (function () {
     });
   }
 
-  return { FREE_LIMIT, PRICE, isMember, setMember, remainingFree, getReads, recordRead, gate };
+  return { FREE_LIMIT, PRICE, isMember, setMember, cancel, remainingFree, getReads, recordRead, isLocked, gate };
 })();
