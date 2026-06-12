@@ -78,22 +78,28 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 input, button { font-size: 1rem; }
 
-/* ---- Theme toggle button (shared) ---- */
+/* ---- Theme toggle: a sliding switch (light ⇆ dark) ---- */
 .theme-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px; height: 42px;
+  position: relative;
+  width: 54px; height: 28px; padding: 0;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 1.15rem;
-  line-height: 1;
-  box-shadow: var(--shadow);
-  transition: transform .2s, background .25s, border-color .25s;
+  background: var(--track-bg);
+  cursor: pointer;
+  transition: background .25s, border-color .25s;
+  flex: none;
 }
-.theme-toggle:hover { transform: rotate(-12deg) scale(1.06); }
+.theme-toggle::before {            /* the sliding knob, with the icon */
+  content: "🌙";
+  position: absolute; top: 2px; left: 2px;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; line-height: 1;
+  background: var(--surface); box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  transition: transform .28s cubic-bezier(.2,.9,.3,1.2);
+}
+:root[data-theme="dark"] .theme-toggle::before { content: "☀️"; transform: translateX(26px); }
+.theme-toggle:hover { border-color: var(--accent); }
 /* floating variant for pages without a topbar (e.g. login) */
 .theme-toggle.floating {
   position: fixed; top: 18px; right: 18px; z-index: 9997;

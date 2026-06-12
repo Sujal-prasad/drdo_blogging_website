@@ -28,14 +28,15 @@
   const fmtDate = (d) =>
     new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
-  let state = { q: "", tag: "All" };
+  let state = { q: "", tag: "All", sort: "new" };
 
   function cardHTML(a) {
     const claps = MidiumArticles.clapsFor(a);
     return `
-      <a class="card" href="article.html?id=${encodeURIComponent(a.id)}">
+      <a class="card" href="/pages/article.html?id=${encodeURIComponent(a.id)}">
         <div class="card-cover" style="${coverStyle(a)}">
           ${a.userPost ? '<span class="you-badge">Your post</span>' : ""}
+          <button class="bm-btn ${MidiumArticles.isBookmarked(a.id) ? "saved" : ""}" data-bm="${esc(a.id)}" type="button" aria-label="Save to reading list" title="Save">🔖</button>
           <span class="card-emoji">${a.emoji || "📝"}</span>
         </div>
         <div class="card-body">
@@ -57,21 +58,29 @@
   function render() {
     const q = state.q.trim().toLowerCase();
     const list = MidiumArticles.getAll().filter((a) => {
-      const tagOk = state.tag === "All" || a.tag === state.tag;
-      const text = (a.title + " " + a.dek + " " + a.author + " " + a.body).toLowerCase();
-      return tagOk && (!q || text.includes(q));
+      if (state.tag === "Saved") { if (!MidiumArticles.isBookmarked(a.id)) return false; }
+      else if (state.tag !== "All" && a.tag !== state.tag) return false;
+      const text = (a.title + " " + a.dek + " " + a.author + " " + a.tag).toLowerCase();
+      return !q || text.includes(q);
     });
+
+    if (state.sort === "claps") list.sort((x, y) => MidiumArticles.clapsFor(y) - MidiumArticles.clapsFor(x));
+    else if (state.sort === "quick") list.sort((x, y) =>
+      (x.readingTime || MidiumArticles.readingTime(x.body)) - (y.readingTime || MidiumArticles.readingTime(y.body)));
+    // "new" keeps getAll()'s date-descending order
 
     const grid = $("#cards");
     grid.innerHTML = list.length
       ? list.map(cardHTML).join("")
-      : `<p class="empty">No stories match your search.<br>Try different keywords or <a href="write.html">write one yourself</a>.</p>`;
+      : (state.tag === "Saved"
+          ? `<p class="empty">No saved stories yet. Tap 🔖 on any article to add it to your reading list.</p>`
+          : `<p class="empty">No stories match your search.<br>Try different keywords or <a href="/pages/write.html">write one yourself</a>.</p>`);
   }
 
   function renderChips() {
-    const tags = ["All", ...MidiumArticles.allTags()];
+    const tags = ["All", "Saved", ...MidiumArticles.allTags()];
     $("#chips").innerHTML = tags
-      .map((t) => `<button class="chip ${t === state.tag ? "active" : ""}" data-tag="${esc(t)}">${esc(t)}</button>`)
+      .map((t) => `<button class="chip ${t === state.tag ? "active" : ""}" data-tag="${esc(t)}">${t === "Saved" ? "🔖 Saved" : esc(t)}</button>`)
       .join("");
   }
 
@@ -109,9 +118,24 @@
     }
   }
 
+  function renderSkeletons() {
+    const grid = $("#cards");
+    if (grid) grid.innerHTML = Array.from({ length: 6 }).map(() =>
+      `<div class="sk-card"><div class="skeleton sk-cover"></div><div class="skeleton sk-line w40"></div><div class="skeleton sk-line w90"></div><div class="skeleton sk-line w60"></div></div>`).join("");
+  }
+
   async function init() {
     const s = await Session.requireAuth();
     if (!s) return; // redirected to login
+
+    // returning from login via a shared deep link? go to where they meant to be
+    try {
+      const dest = sessionStorage.getItem("midium-redirect");
+      if (dest) { sessionStorage.removeItem("midium-redirect"); location.replace(dest); return; }
+    } catch (_) {}
+
+    renderSkeletons();                  // show placeholders while the DB loads
+    await MidiumArticles.load(); // hydrate posts from Supabase
 
     const name = Session.displayName(s.user);
     const isNew = Session.isNewUser(s.user);
@@ -130,20 +154,27 @@
 
     $("#signout").addEventListener("click", () => Session.signOut());
 
-    // membership button (shows only for members; click to cancel)
+    // membership button: "✦ Go Premium" (non-member) ⇆ "★ Member" (member)
     const memberBtn = $("#memberBtn");
     function refreshMemberBtn() {
-      if (Paywall.isMember()) { memberBtn.hidden = false; memberBtn.textContent = "★ Member"; memberBtn.title = "Manage membership"; }
-      else { memberBtn.hidden = true; }
+      memberBtn.hidden = false;
+      if (Paywall.isMember()) {
+        memberBtn.textContent = "★ Member"; memberBtn.classList.remove("btn--gold"); memberBtn.title = "Manage membership";
+      } else {
+        memberBtn.textContent = "✦ Go Premium"; memberBtn.classList.add("btn--gold"); memberBtn.title = "Become a member";
+      }
     }
     refreshMemberBtn();
     memberBtn.addEventListener("click", () => {
-      if (!Paywall.isMember()) return;
-      if (confirm("Cancel your Midium membership?\n\nYou'll return to the free plan (5 free articles).")) {
-        Paywall.cancel();
-        refreshMemberBtn();
-        render();
-        toast("Membership cancelled. You're back on the free plan.");
+      if (Paywall.isMember()) {
+        UI.confirm({
+          title: "Cancel membership?", emoji: "💔",
+          body: "You'll lose unlimited access and return to the free plan (5 free articles).",
+          confirmText: "Cancel membership", cancelText: "Keep membership", danger: true,
+          onConfirm: () => { Paywall.cancel(); refreshMemberBtn(); render(); toast("Membership cancelled. You're back on the free plan."); }
+        });
+      } else {
+        Paywall.subscribe(() => { refreshMemberBtn(); render(); toast("Welcome — you're a Midium member! 🎉"); });
       }
     });
 
@@ -151,12 +182,23 @@
     render();
 
     $("#search").addEventListener("input", (e) => { state.q = e.target.value; render(); });
+    $("#sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
     $("#chips").addEventListener("click", (e) => {
       const btn = e.target.closest(".chip");
       if (!btn) return;
       state.tag = btn.dataset.tag;
       renderChips();
       render();
+    });
+    // bookmark toggles (delegated; prevent the card link from navigating)
+    $("#cards").addEventListener("click", (e) => {
+      const bm = e.target.closest(".bm-btn");
+      if (!bm) return;
+      e.preventDefault(); e.stopPropagation();
+      const on = MidiumArticles.toggleBookmark(bm.dataset.bm);
+      bm.classList.toggle("saved", on);
+      toast(on ? "Saved to your reading list." : "Removed from your reading list.");
+      if (state.tag === "Saved") render();
     });
   }
 

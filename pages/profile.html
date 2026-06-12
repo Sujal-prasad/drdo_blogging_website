@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile · Midium</title>
+
+  <script>
+    (function () {
+      document.documentElement.classList.add("auth-gate");
+      setTimeout(function () {
+        if (document.documentElement.classList.contains("auth-gate")) location.replace("/pages/login.html");
+      }, 7000);
+      var saved = localStorage.getItem("midium-theme");
+      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.setAttribute("data-theme", saved || (prefersDark ? "dark" : "light"));
+    })();
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/app.css" />
+</head>
+<body>
+  <header class="app-topbar">
+    <a class="brand" href="/index.html">Midium<span class="dot">.</span></a>
+    <div class="topbar-actions">
+      <a class="btn btn--ghost" href="/index.html">← Feed</a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"></button>
+    </div>
+  </header>
+
+  <main class="container--narrow" style="padding:34px 0 80px;">
+    <h1 style="font-family:var(--serif); font-size:2.2rem; margin-bottom:22px;">Your profile</h1>
+
+    <!-- Account -->
+    <section class="profile-card">
+      <div class="profile-head">
+        <span class="profile-avatar" id="avatar"></span>
+        <div>
+          <div class="profile-name" id="nameLabel">—</div>
+          <div class="profile-sub" id="emailLabel">—</div>
+          <span class="profile-provider" id="providerLabel"></span>
+        </div>
+      </div>
+      <div class="profile-field">
+        <label for="displayName">Display name</label>
+        <div class="profile-row">
+          <input id="displayName" type="text" placeholder="Your name" />
+          <button class="btn btn--accent" id="saveName" type="button">Save</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Appearance -->
+    <section class="profile-card">
+      <h2 class="profile-h2">Appearance</h2>
+      <p class="profile-sub" style="margin-bottom:14px;">Choose how Midium looks.</p>
+      <div class="seg-theme" id="themeSeg">
+        <button data-theme-choice="light">☀️ Light</button>
+        <button data-theme-choice="dark">🌙 Dark</button>
+        <button data-theme-choice="system">🖥️ System</button>
+      </div>
+    </section>
+
+    <!-- Security -->
+    <section class="profile-card">
+      <h2 class="profile-h2" id="pwHeading">Change password</h2>
+      <p class="profile-sub" id="pwNote" style="margin-bottom:14px;"></p>
+      <div class="profile-field">
+        <label for="newPass">New password</label>
+        <input id="newPass" type="password" placeholder="At least 6 characters" />
+        <div class="pw-strength hidden" id="pwStrength"><span class="pw-bar"><i></i></span><span class="pw-label"></span></div>
+      </div>
+      <div class="profile-field">
+        <label for="confirmPass">Confirm password</label>
+        <input id="confirmPass" type="password" placeholder="Re-enter password" />
+      </div>
+      <button class="btn btn--accent" id="savePass" type="button">Update password</button>
+    </section>
+
+    <!-- Membership -->
+    <section class="profile-card">
+      <h2 class="profile-h2">Membership</h2>
+      <p class="profile-sub" id="memberStatus" style="margin-bottom:14px;">—</p>
+      <button class="btn btn--ghost" id="cancelMember" type="button" hidden>Cancel membership</button>
+      <button class="btn btn--gold" id="joinMember" type="button" hidden>✦ Become a member</button>
+    </section>
+
+    <button class="btn btn--ghost" id="signout" type="button" style="margin-top:6px;">Sign out</button>
+  </main>
+
+  <div class="toast-stack" id="toastStack"></div>
+
+  <script src="/scripts/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/scripts/core/supabase-client.js"></script>
+  <script src="/scripts/core/session.js"></script>
+  <script src="/scripts/core/theme.js"></script>
+  <script src="/scripts/core/ui.js"></script>
+  <script src="/scripts/feed/paywall.js"></script>
+  <script src="/scripts/feed/profile.js"></script>
+</body>
+</html>

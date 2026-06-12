@@ -54,6 +54,12 @@ window.Session = (function () {
   async function requireAuth() {
     const s = await get();
     if (!s.preview && !s.user) {
+      // remember a deep link (e.g. a shared article) so we can return after login
+      try {
+        if (!/\/(index\.html)?$/.test(location.pathname)) {
+          sessionStorage.setItem("midium-redirect", location.pathname + location.search);
+        }
+      } catch (_) {}
       window.location.href = window.APP_CONFIG.LOGIN_PATH;
       return null; // page stays hidden by the auth-gate during the redirect
     }

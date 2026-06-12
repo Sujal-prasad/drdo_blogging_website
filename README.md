@@ -48,19 +48,20 @@ UI/UX — not a generic template.
 
 ```
 drdo_blogging_website/
-├── index.html              # Feed (home; protected route)
-├── login.html              # Auth page (sign in / sign up)
-├── write.html              # Compose & publish your own article
-├── article.html            # Read a single article (?id=…)
-├── reels.html              # Vertical snap-scroll "reels" view
+├── index.html              # Feed (home + OAuth landing; kept at root)
+├── pages/                  # all other routes (root-absolute paths, so depth is safe)
+│   ├── login.html          # Auth page (sign in / sign up)
+│   ├── write.html          # Composer (cover + in-body photo upload)
+│   ├── article.html        # Reel-style reader (scrolls into the next article)
+│   └── profile.html        # Profile/settings (name, appearance, password, membership)
 ├── README.md
 ├── .vscode/settings.json   # Live Server tweaks (stop self-refresh)
 ├── styles/
-│   ├── base.css            # Design tokens, dark theme, toasts, success overlay
+│   ├── base.css            # Design tokens, dark theme, toasts, overlays
 │   ├── auth.css            # Auth-page layout, mascot, aurora, form components
-│   └── app.css             # Topbar, buttons, feed cards, editor, reader
+│   └── app.css             # Topbar, buttons, cards, reader, paywall, profile, share
 ├── scripts/
-│   ├── config.js           # 🔑 YOUR Supabase keys go here
+│   ├── config.js           # 🔑 YOUR Supabase keys + HOME_PATH / LOGIN_PATH
 │   ├── core/
 │   │   ├── supabase-client.js   # Shared Supabase client (or preview fallback)
 │   │   ├── session.js           # Auth guard + display name (shared by app pages)
@@ -72,11 +73,11 @@ drdo_blogging_website/
 │   ├── data/
 │   │   └── articles.js          # Article store: sample posts + your localStorage posts
 │   └── feed/
-│       ├── feed.js              # Renders the feed + search/tag filters
-│       ├── write.js             # The composer (publish, draft autosave)
-│       ├── article.js           # The reader (clap, delete own post)
-│       ├── paywall.js           # 5-free paywall + simulated Card/UPI/Net-banking checkout
-│       └── reels.js             # Vertical snap-scroll reels view
+│       ├── feed.js              # Feed + search/tag filters + membership button
+│       ├── write.js             # Composer (photo upload, draft autosave, publish)
+│       ├── article.js           # Reel reader (scroll-to-next, clap-once, share)
+│       ├── paywall.js           # 5-free paywall + RazorPlay Card/UPI/Net-banking checkout
+│       └── profile.js           # Profile/settings logic
 └── assets/
     └── img/                # (images added as the project grows)
 ```
@@ -180,31 +181,35 @@ The feed renders these as cards, with a **search box** and **tag-chip filters** 
 entirely client-side. Still to add: sorting by **reading time**, **popularity (claps)**,
 and **recency**. Just append to the array to add more seed content.
 
-### Phase 3 — Paywall + **simulated** payments ✅ *(built)*
-- First **5 articles free** (tracked in `localStorage`); the 6th+ is **blurred** with a
-  tasteful membership prompt. Your own posts are always free.
+### Phase 3 — Paywall (RazorPlay) + **simulated** payments ✅ *(built)*
+- First **5 articles free** (counted only when an article is actually **viewed**); the next
+  one is **blurred** with a tasteful **RazorPlay** membership prompt. Your own posts are
+  always free.
 - Payment is **fully simulated** (front-end only — no real gateway, no keys, no charges):
-  a realistic checkout with **Card / UPI / Net-banking** tabs, input validation, a
-  "processing…" spinner, and a success animation. Paying sets membership in `localStorage`
-  and unlocks unlimited reading.
-- A small pill under each article byline shows **"N of 5 free articles left"** or
-  **"Member · unlimited reading."**
-- Code: `scripts/feed/paywall.js`, wired into `article.html`.
-- *To reset for testing:* clear the `midium-member` and `midium-reads` keys in the
-  browser's localStorage (DevTools → Application → Local Storage).
+  a checkout with **Card / UPI / Net-banking** tabs, input validation, a "processing…"
+  spinner, and a success animation.
+  - **Net-banking** opens a realistic **mock bank page** (bank login → confirm payment → pay).
+- A pill under each article byline shows **"N of 5 free articles left"** or **"★ Member."**
+- **Cancel membership:** when you're a member, a **★ Member** button appears in the feed
+  topbar — click it to cancel (resets you to the free plan).
+- Code: `scripts/feed/paywall.js`.
+- *To reset for testing:* cancel membership, or clear the `midium-member` / `midium-reads`
+  keys (DevTools → Application → Local Storage).
 
-### Phase 4 — Reels-style reading ✅ *(built)*
-- **`reels.html`** — a full-screen, vertical, **snap-scrolling** feed of articles (like
-  Reels/TikTok). Each panel uses the article's accent as a full-bleed gradient with the
-  title, subtitle, author, clap button, and a **Read full story** link.
-- Reached from the **📱 Reels** button in the feed topbar.
-- Paywall-aware: locked articles (past the 5-free limit) show a **🔒 Members only** badge;
-  opening one routes through the reader where the RazorPlay checkout enforces it.
+### Phase 4 — Reel-style reading ✅ *(built)*
+- The **reader itself is the "reel."** Open any article and it flows into the **next one as
+  you scroll** (continuous, auto-loading), rather than being a separate page.
+- Each article counts toward the free limit **only when scrolled into view**, so pre-loading
+  the next story never wastes a free read. The paywall stops you at the limit until you join.
+- Cover art: every article now has a real **editorial cover photo** tinted with its accent
+  colour (in feed cards and the reader), with emojis used as accents.
 
-### Phase 5 — Real database (Supabase) *(planned)*
-Move articles, claps, reads, and membership out of `localStorage` into Supabase Postgres
-tables (with Row-Level Security) so published posts are **shared across all users and
-devices**. See the `profiles / articles / claps / reads / memberships` sketch above.
+### Phase 5 — Real database (Supabase) ✅ *(articles wired)*
+Published **articles now live in Supabase** (`supabase/schema.sql` → run once in the SQL
+Editor), so posts are **shared across all users and devices**. The store
+(`scripts/data/articles.js`) loads/inserts/deletes via Supabase with Row-Level Security;
+the sample "house" articles stay client-side. Claps, reads, and membership remain
+client-side (the simulated paywall) and can be moved to the DB later.
 
 ### Phase 6 — Deploy to Vercel *(planned — do last)*
 The site is fully static, so Vercel deploys it with **no build step**:

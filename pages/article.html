@@ -11,7 +11,7 @@
       document.documentElement.classList.add("auth-gate");
       // fail CLOSED: if auth never confirms within 7s, go to login instead of revealing
       setTimeout(function () {
-        if (document.documentElement.classList.contains("auth-gate")) location.replace("login.html");
+        if (document.documentElement.classList.contains("auth-gate")) location.replace("/pages/login.html");
       }, 7000);
       var saved = localStorage.getItem("midium-theme");
       var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -20,16 +20,16 @@
   </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles/base.css" />
-  <link rel="stylesheet" href="styles/app.css" />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/app.css" />
 </head>
 <body>
   <header class="app-topbar">
-    <a class="brand" href="index.html">Midium<span class="dot">.</span></a>
+    <a class="brand" href="/index.html">Midium<span class="dot">.</span></a>
     <div class="topbar-actions">
-      <a class="btn btn--ghost" href="index.html">← Feed</a>
-      <a class="btn btn--accent" href="write.html">✍️ Write</a>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">🌙</button>
+      <a class="btn btn--ghost" href="/index.html">← Feed</a>
+      <a class="btn btn--accent" href="/pages/write.html">✍️ Write</a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"></button>
     </div>
   </header>
 
@@ -41,14 +41,15 @@
   <div class="toast-stack" id="toastStack"></div>
 
   <!-- scripts -->
-  <script src="scripts/config.js"></script>
+  <script src="/scripts/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="scripts/core/supabase-client.js"></script>
-  <script src="scripts/core/session.js"></script>
-  <script src="scripts/core/theme.js"></script>
-  <script src="scripts/data/articles.js"></script>
+  <script src="/scripts/core/supabase-client.js"></script>
+  <script src="/scripts/core/session.js"></script>
+  <script src="/scripts/core/theme.js"></script>
+  <script src="/scripts/data/articles.js"></script>
+  <script src="/scripts/data/social.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <script src="scripts/feed/paywall.js"></script>
-  <script src="scripts/feed/article.js"></script>
+  <script src="/scripts/feed/paywall.js"></script>
+  <script src="/scripts/feed/article.js"></script>
 </body>
 </html>

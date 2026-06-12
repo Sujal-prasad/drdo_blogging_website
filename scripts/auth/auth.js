@@ -211,7 +211,7 @@
       const { error } = await sb.auth.signInWithOAuth({
         provider,
         // return to the feed (the URL already confirmed working in your allow-list)
-        options: { redirectTo: window.location.origin + "/" + CFG.HOME_PATH }
+        options: { redirectTo: window.location.origin + CFG.HOME_PATH }
       });
       if (error) { toast(error.message, "error"); btn.disabled = false; }
       // On success the browser is redirected by the provider automatically.
