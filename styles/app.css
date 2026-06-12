@@ -173,6 +173,97 @@
 @keyframes clap-pop { 0%{transform:scale(1)} 40%{transform:scale(1.18)} 100%{transform:scale(1)} }
 .danger-link { margin-left: auto; color: var(--danger); font-weight: 600; font-size: .9rem; cursor: pointer; background: none; }
 
+/* ---------- Paywall ---------- */
+.hidden { display: none !important; }
+
+/* read-quota / membership pill (under the byline) */
+.read-meter { margin-top: 16px; }
+.meter-pill {
+  display: inline-block; padding: 5px 12px; border-radius: 999px;
+  font-size: .78rem; font-weight: 600;
+  background: var(--track-bg); color: var(--ink-soft); border: 1px solid var(--line);
+}
+.meter-pill.member { background: #eaf6e9; color: var(--accent-2); border-color: transparent; }
+:root[data-theme="dark"] .meter-pill.member { background: rgba(63,174,59,.16); color: var(--accent-2); }
+
+/* blurred (locked) article body */
+.article-body.paywalled {
+  filter: blur(6px);
+  opacity: .55;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* checkout overlay */
+.pay-overlay {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; overflow-y: auto;
+  background: rgba(10, 10, 8, .6);
+  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+  animation: overlay-in .25s ease both;
+}
+.pay-card {
+  background: var(--surface); color: var(--ink);
+  width: min(94vw, 440px); margin: auto;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 30px 30px 24px;
+  animation: card-pop .5s cubic-bezier(.2,.9,.3,1.3) both;
+}
+.pay-kicker { font-size: .74rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-2); }
+.pay-head h2 { font-family: var(--serif); font-size: 1.5rem; margin: 8px 0 6px; }
+.pay-head p { color: var(--ink-soft); font-size: .95rem; line-height: 1.5; }
+
+.pay-plan {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin: 18px 0; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--field-bg);
+}
+.pay-plan strong { display: block; font-size: .98rem; }
+.pay-plan span { font-size: .82rem; color: var(--ink-soft); }
+.pay-price { font-family: var(--serif); font-size: 1.5rem; font-weight: 700; white-space: nowrap; }
+.pay-price small { font-size: .8rem; color: var(--ink-soft); font-weight: 400; }
+
+.pay-tabs { display: flex; gap: 6px; background: var(--track-bg); padding: 5px; border-radius: 999px; margin-bottom: 18px; }
+.pay-tab { flex: 1; padding: 9px 0; border-radius: 999px; font-weight: 600; font-size: .88rem; color: var(--ink-soft); }
+.pay-tab.active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+
+.pay-pane label { display: block; font-size: .8rem; font-weight: 600; color: var(--ink-soft); margin-bottom: 12px; }
+.pay-pane input, .pay-pane select {
+  display: block; width: 100%; margin-top: 6px; padding: 11px 12px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--field-bg); color: var(--ink); outline: none; font-size: .95rem;
+}
+.pay-pane input:focus, .pay-pane select:focus { border-color: var(--accent); }
+.pay-row { display: flex; gap: 12px; }
+.pay-row label { flex: 1; }
+.pay-hint { font-size: .8rem; color: var(--ink-soft); margin-top: 4px; }
+
+.pay-error { color: var(--danger); font-size: .85rem; font-weight: 600; min-height: 1.1em; margin: 4px 0; }
+
+.pay-pay {
+  width: 100%; padding: 13px; margin-top: 8px;
+  border-radius: var(--radius-sm); background: var(--accent); color: #fff;
+  font-weight: 700; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.pay-pay:hover { background: var(--accent-2); }
+.pay-pay:disabled { opacity: .8; cursor: default; }
+.pay-later { display: block; width: 100%; margin-top: 10px; color: var(--ink-soft); font-weight: 600; font-size: .9rem; }
+.pay-secure { text-align: center; font-size: .76rem; color: var(--ink-soft); margin-top: 12px; }
+
+.pay-spinner {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.5); border-top-color: #fff;
+  display: inline-block; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.pay-success { text-align: center; padding: 14px 0; }
+.pay-success h2 { font-family: var(--serif); font-size: 1.6rem; margin-bottom: 6px; }
+.pay-success p { color: var(--ink-soft); }
+
 @media (max-width: 600px) {
   .app-topbar { padding: 12px 16px; }
   .btn { padding: 8px 13px; }

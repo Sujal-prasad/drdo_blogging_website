@@ -14,13 +14,13 @@ UI/UX — not a generic template.
 
 ## ✨ What's built so far (Phase 1 — Authentication)
 
-- **Split editorial layout** with a signature mascot — **Mo, a cat reading a book**
-  whose **eyes follow your cursor**, and who **lifts the book to hide its eyes** when you
-  focus the password field.
+- **Split editorial layout** with a signature mascot — **a cat reading a book** whose
+  **eyes follow your cursor**, and who **lifts the book to hide its eyes** when you focus
+  the password field.
 - **Sign in / Sign up** in one page with an animated segmented toggle.
-- **Auth methods:** Email + password, **Google**, and **Facebook** — all wired to
-  Supabase, all on its free tier. *(Phone/SMS login was intentionally left out because it
-  needs a paid SMS provider.)*
+- **Auth methods:** Email + password, **Google**, and **GitHub** — all wired to
+  Supabase, all on its free tier. *(Phone/SMS login was left out because it needs a paid
+  SMS provider; Facebook was dropped for its heavy app-review setup.)*
 - **Smart redirects:** already-logged-in users skip the form; new vs returning users
   are routed correctly ("you already have an account → switch to sign in").
 - **Distinct success animations:** an elegant *"Welcome back"* puff for **login**, and a
@@ -28,7 +28,7 @@ UI/UX — not a generic template.
 - **Dark mode:** persistent, no-flash, respects the OS preference on first visit.
 - **Premium polish:** animated aurora backdrop, GSAP staggered entrance, password
   **reveal toggle**, **caps-lock warning**, live **password-strength meter**, and a
-  rotating (and very unhinged) editorial ticker.
+  rotating headline ticker.
 
 ## ✨ Reading & writing (Phase 2 — started)
 
@@ -39,8 +39,8 @@ UI/UX — not a generic template.
   appears in the feed immediately.
 - **Reader** (`article.html`): full article view with a **clap** button; you can **delete**
   your own posts.
-- **Storage:** seed parody articles ship in `scripts/data/articles.js`; your posts are
-  saved in the browser (`localStorage`) — no backend needed, works in preview mode.
+- **Storage:** a set of sample articles ships in `scripts/data/articles.js`; your posts
+  are saved in the browser (`localStorage`) — no backend needed, works in preview mode.
 
 ---
 
@@ -65,15 +65,16 @@ drdo_blogging_website/
 │   │   ├── session.js           # Auth guard + display name (shared by app pages)
 │   │   └── theme.js             # Dark/light toggle + persistence
 │   ├── auth/
-│   │   ├── auth.js              # Sign in / sign up / Google + Facebook OAuth / redirects
+│   │   ├── auth.js              # Sign in / sign up / Google + GitHub OAuth / redirects
 │   │   ├── mascot-eyes.js       # Cursor-tracking eyes + book-cover animation
 │   │   └── interactions.js      # Entrance anim, password UX, ticker
 │   ├── data/
-│   │   └── articles.js          # Article store: seed parody posts + your localStorage posts
+│   │   └── articles.js          # Article store: sample posts + your localStorage posts
 │   └── feed/
 │       ├── feed.js              # Renders the feed + search/tag filters
 │       ├── write.js             # The composer (publish, draft autosave)
-│       └── article.js           # The reader (clap, delete own post)
+│       ├── article.js           # The reader (clap, delete own post)
+│       └── paywall.js           # 5-free paywall + simulated Card/UPI/Net-banking checkout
 └── assets/
     └── img/                # (images added as the project grows)
 ```
@@ -91,7 +92,7 @@ add the feed, reels, and payment modules.
 3. It opens at `http://127.0.0.1:5500/login.html`.
 
 > ⚠️ Always run via Live Server (an `http://localhost` URL) — **not** by double-clicking
-> the file (`file://`). Google/Facebook OAuth requires a real HTTP origin to work.
+> the file (`file://`). Google/GitHub OAuth requires a real HTTP origin to work.
 
 Until you add Supabase keys you'll see a **Preview mode** banner — that's expected.
 
@@ -141,8 +142,10 @@ Until you add Supabase keys you'll see a **Preview mode** banner — that's expe
    - Create OAuth credentials at **console.cloud.google.com** (APIs & Services → Credentials).
    - Authorized redirect URI: `https://<your-project-ref>.supabase.co/auth/v1/callback`.
    - Paste the Client ID & Secret into Supabase.
-5. **Facebook login:** Supabase → Providers → Facebook → enable.
-   - Create an app at **developers.facebook.com**, add the same callback URL.
+5. **GitHub login:** Supabase → Providers → GitHub → enable.
+   - Create an OAuth App at **github.com/settings/developers** → New OAuth App.
+   - Authorization callback URL: `https://<your-project-ref>.supabase.co/auth/v1/callback`.
+   - Paste the Client ID & generated Client Secret into Supabase.
 
 > 💸 Everything above is on Supabase's **free tier**. Phone/SMS login was deliberately
 > skipped — it's the one auth method that needs a paid SMS provider.
@@ -153,37 +156,41 @@ When keys are present, the Preview banner disappears and real accounts/sessions 
 
 ## 🗺️ Roadmap
 
-### Phase 2 — Article feed + filtering *(next)*
-**No APIs, no scraping.** The site is populated with our own **parody articles** —
-written in the same gloriously-average, clickbaity *Midium* voice as the login ticker
-("How I Made $0 Following My Passion", etc.). They live in a local data file:
+### Phase 2 — Article feed + filtering *(in progress)*
+**No APIs, no scraping.** The site ships with a set of well-written sample articles in a
+local data file, and anyone can publish their own (saved to `localStorage`):
 
 ```
-scripts/data/articles.js   # an array of parody article objects
+scripts/data/articles.js   # an array of article objects
 ```
 
 Each article object looks roughly like:
 
 ```js
 {
-  id, title, dek, author, avatar, tag, readingTime,
-  cover,        // a CSS gradient or local image (no external fetch)
+  id, title, dek, author, tag, readingTime,
+  accent, emoji,   // build the card/cover (a CSS gradient + icon, no external fetch)
   claps, date,
-  body          // the full satirical article (HTML/markdown)
+  body             // the full article text (blank line = new paragraph)
 }
 ```
 
-The feed renders these as cards, and **filters** run entirely client-side over the
-local array: by **tag/topic**, **reading time**, **popularity (claps)**, **recency**,
-plus a **search box**. Easy to keep adding jokes — just append to the array.
+The feed renders these as cards, with a **search box** and **tag-chip filters** running
+entirely client-side. Still to add: sorting by **reading time**, **popularity (claps)**,
+and **recency**. Just append to the array to add more seed content.
 
-### Phase 3 — Paywall + **simulated** payments
-- First **5 articles free**; subsequent articles **blurred** with a **humorous (but
-  tasteful) paywall popup**.
+### Phase 3 — Paywall + **simulated** payments ✅ *(built)*
+- First **5 articles free** (tracked in `localStorage`); the 6th+ is **blurred** with a
+  tasteful membership prompt. Your own posts are always free.
 - Payment is **fully simulated** (front-end only — no real gateway, no keys, no charges):
-  a realistic checkout with **Card / UPI / Net-banking** tabs, fake input validation,
-  a "processing…" state, and a success animation that unlocks articles for the session.
-  Unlock state persists via `localStorage`.
+  a realistic checkout with **Card / UPI / Net-banking** tabs, input validation, a
+  "processing…" spinner, and a success animation. Paying sets membership in `localStorage`
+  and unlocks unlimited reading.
+- A small pill under each article byline shows **"N of 5 free articles left"** or
+  **"Member · unlimited reading."**
+- Code: `scripts/feed/paywall.js`, wired into `article.html`.
+- *To reset for testing:* clear the `midium-member` and `midium-reads` keys in the
+  browser's localStorage (DevTools → Application → Local Storage).
 
 ### Phase 4 — Reels-style reading
 - Vertical, snap-scrolling, full-screen article cards (like Reels) with the paywall

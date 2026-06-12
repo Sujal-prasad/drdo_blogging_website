@@ -1,7 +1,7 @@
 /* =========================================================
    AUTH LOGIC
    - sign in / sign up toggle
-   - Google / Facebook OAuth
+   - Google / GitHub OAuth
    - email + password
    - session check + redirect (handles "already has an account")
    - confetti celebration on success
@@ -47,14 +47,7 @@
          <p>${subtitle}</p>
        </div>`;
     document.body.appendChild(ov);
-    if (hasGSAP) {
-      gsap.fromTo(ov, { opacity: 0 }, { opacity: 1, duration: 0.25 });
-      gsap.fromTo(".success-card", { scale: 0.82, y: 22, opacity: 0 },
-        { scale: 1, y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.7)", delay: 0.05 });
-      gsap.fromTo(".success-emoji", { scale: 0 },
-        { scale: 1, duration: 0.6, ease: "elastic.out(1, 0.5)", delay: 0.25 });
-    }
-    return ov;
+    return ov; // entrance animation is handled by CSS (works without GSAP)
   }
 
   /* ---- SIGN IN: elegant, understated "welcome back" ---- */
@@ -160,7 +153,7 @@
   const emailForm = $("emailForm");
 
   /* =========================================================
-     OAuth (Google / Facebook)
+     OAuth (Google / GitHub)
      ========================================================= */
   document.querySelectorAll(".btn-oauth").forEach((btn) => {
     btn.addEventListener("click", async () => {

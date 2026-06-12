@@ -39,6 +39,7 @@
           <div>${fmtDate(a.date)} · ${mins} min read</div>
         </div>
       </div>
+      <div class="read-meter" id="readMeter"></div>
       <div class="article-body">${paragraphs(a.body)}</div>
       <div class="article-foot">
         <button class="clap-btn" id="clap">👏 <span id="clapCount">${claps}</span></button>
@@ -65,8 +66,8 @@
   function notFound() {
     $("#article").innerHTML = `
       <div class="empty" style="padding:80px 0">
-        <h1 class="article-title" style="font-size:2rem">This story wandered off. 🐾</h1>
-        <p style="margin:12px 0 22px">Mo couldn't find it. It may have been deleted.</p>
+        <h1 class="article-title" style="font-size:2rem">Story not found</h1>
+        <p style="margin:12px 0 22px">We couldn't find that article. It may have been removed.</p>
         <a class="btn btn--accent" href="index.html">Back to the feed</a>
       </div>`;
   }
@@ -76,8 +77,23 @@
     if (!s) return;
     const id = new URLSearchParams(location.search).get("id");
     const a = id ? MidiumArticles.getById(id) : null;
-    if (a) { document.title = a.title + " · Midium"; render(a); }
-    else notFound();
+    if (!a) { notFound(); return; }
+
+    document.title = a.title + " · Midium";
+    render(a);
+
+    const meter = $("#readMeter");
+    const setMemberPill = () => { if (meter) meter.innerHTML = `<span class="meter-pill member">★ Member · unlimited reading</span>`; };
+
+    // Paywall: blur the body + open checkout if past the free limit.
+    Paywall.gate(a, { blurTarget: $(".article-body"), onUnlock: setMemberPill });
+
+    // Quota / membership indicator under the byline.
+    if (meter) {
+      if (Paywall.isMember()) setMemberPill();
+      else if (a.userPost)    meter.innerHTML = `<span class="meter-pill">Your post · always free</span>`;
+      else meter.innerHTML = `<span class="meter-pill">${Paywall.remainingFree()} of ${Paywall.FREE_LIMIT} free articles left</span>`;
+    }
   }
 
   init();

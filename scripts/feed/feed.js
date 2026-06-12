@@ -53,7 +53,7 @@
     const grid = $("#cards");
     grid.innerHTML = list.length
       ? list.map(cardHTML).join("")
-      : `<p class="empty">No stories match that. Even Mo looked. 🐱<br>Try a different search or <a href="write.html">write one yourself</a>.</p>`;
+      : `<p class="empty">No stories match your search.<br>Try different keywords or <a href="write.html">write one yourself</a>.</p>`;
   }
 
   function renderChips() {
@@ -63,11 +63,59 @@
       .join("");
   }
 
+  // brief success card shown on the feed after an OAuth login
+  function showOverlay(title, subtitle, emoji) {
+    const ov = document.createElement("div");
+    ov.className = "success-overlay";
+    ov.innerHTML =
+      `<div class="success-card">
+         <div class="success-emoji">${emoji}</div>
+         <h3>${title}</h3>
+         <p>${subtitle}</p>
+       </div>`;
+    document.body.appendChild(ov);
+    setTimeout(() => {
+      ov.style.transition = "opacity .4s ease";
+      ov.style.opacity = "0";
+      setTimeout(() => ov.remove(), 400);
+    }, 1700);
+  }
+
+  // celebration shown on the feed right after an OAuth login lands here
+  function celebrate(isNew) {
+    if (typeof confetti !== "function") return;
+    if (isNew) {
+      confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+      const end = Date.now() + 800;
+      (function frame() {
+        confetti({ particleCount: 4, angle: 60,  spread: 70, origin: { x: 0 }, colors: ["#1a8917", "#e0a800", "#14130f"] });
+        confetti({ particleCount: 4, angle: 120, spread: 70, origin: { x: 1 }, colors: ["#1a8917", "#e0a800", "#14130f"] });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+    } else {
+      confetti({ particleCount: 70, spread: 55, startVelocity: 26, origin: { y: 0.5 }, colors: ["#1a8917", "#e0a800", "#ffffff"] });
+    }
+  }
+
   async function init() {
     const s = await Session.requireAuth();
     if (!s) return; // redirected to login
 
-    $("#greeting").textContent = `Welcome back, ${Session.displayName(s.user)}.`;
+    const name = Session.displayName(s.user);
+    const isNew = Session.isNewUser(s.user);
+    $("#greeting").textContent = isNew ? `Welcome to Midium, ${name}! 🎉` : `Welcome back, ${name}.`;
+
+    // OAuth can't animate on the login page (it redirects away), so do it here
+    if (window.__cameFromOAuth) {
+      celebrate(isNew);
+      showOverlay(
+        isNew ? "Welcome to Midium! 🎉" : "Welcome back 👋",
+        isNew ? "Your account is ready." : "Good to see you again.",
+        isNew ? "🎉" : "📖"
+      );
+      window.__cameFromOAuth = false;
+    }
+
     $("#signout").addEventListener("click", () => Session.signOut());
 
     renderChips();

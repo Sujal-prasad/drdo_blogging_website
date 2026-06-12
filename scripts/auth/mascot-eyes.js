@@ -1,7 +1,7 @@
 /* =========================================================
    MASCOT ANIMATION
    - pupils follow the cursor (eyes peek over the book)
-   - the cat lifts its book to cover its eyes on password focus
+   - the cat lifts the book to cover its eyes on password focus
    ========================================================= */
 
 (function () {

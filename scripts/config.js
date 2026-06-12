@@ -18,8 +18,8 @@
    ============================================================= */
 
 window.APP_CONFIG = {
-  SUPABASE_URL: "https://YOUR-PROJECT-REF.supabase.co",
-  SUPABASE_ANON_KEY: "YOUR-ANON-PUBLIC-KEY",
+  SUPABASE_URL: "https://lfrcqagkjwskjbigunte.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmcmNxYWdrandza2piaWd1bnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNTE5NDMsImV4cCI6MjA5NjgyNzk0M30.W2zAHJW54UnzenESWKG4txjrBBtDNhN6RMoCFMg1lsE",
 
   // Where to send the user after a successful login/signup:
   HOME_PATH: "index.html",
