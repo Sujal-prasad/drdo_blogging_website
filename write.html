@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Write · Midium</title>
+
+  <script>
+    (function () {
+      var saved = localStorage.getItem("midium-theme");
+      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.setAttribute("data-theme", saved || (prefersDark ? "dark" : "light"));
+    })();
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/base.css" />
+  <link rel="stylesheet" href="styles/app.css" />
+</head>
+<body>
+  <header class="app-topbar">
+    <a class="brand" href="index.html">Midium<span class="dot">.</span></a>
+    <div class="topbar-actions">
+      <a class="btn btn--ghost" href="index.html">← Feed</a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">🌙</button>
+    </div>
+  </header>
+
+  <main class="container--narrow composer">
+    <p class="kicker">
+      Drafting as <strong id="authorName">You</strong>
+      <button id="changeName" type="button"
+        style="background:none;color:var(--accent);font-weight:600;text-decoration:underline;cursor:pointer;font-size:.82rem;margin-left:6px;">change</button>
+    </p>
+
+    <input id="title" class="composer-title" type="text" placeholder="Your gloriously medium headline…" maxlength="120" />
+    <input id="dek"   class="composer-dek"   type="text" placeholder="A subtitle people will absolutely skim…" maxlength="160" />
+
+    <div class="composer-row">
+      <div class="composer-field">
+        <label for="tag">Topic</label>
+        <input id="tag" list="tagList" placeholder="Life" />
+        <datalist id="tagList">
+          <option>Hustle</option><option>Startups</option><option>Tech</option>
+          <option>Wellness</option><option>Money</option><option>Food</option>
+          <option>Life</option><option>Opinion</option><option>Relationships</option><option>Culture</option>
+        </datalist>
+      </div>
+
+      <div class="composer-field">
+        <label>Cover colour</label>
+        <div class="swatches" id="swatches"></div>
+      </div>
+
+      <div class="composer-field">
+        <label>Cover icon</label>
+        <div class="emojis" id="emojis"></div>
+      </div>
+    </div>
+
+    <div class="cover-preview" id="coverPreview"><span id="coverEmoji">📝</span></div>
+
+    <textarea id="body" class="composer-body"
+      placeholder="Tell your story. Leave a blank line between paragraphs.&#10;&#10;Pro tip: confidence covers for content."></textarea>
+
+    <div class="publish-bar">
+      <span class="hint" id="readtime">0 min read · drafts save automatically</span>
+      <button class="btn btn--accent" id="publish" type="button" disabled>Publish</button>
+    </div>
+  </main>
+
+  <div class="toast-stack" id="toastStack"></div>
+
+  <!-- scripts -->
+  <script src="scripts/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="scripts/core/supabase-client.js"></script>
+  <script src="scripts/core/session.js"></script>
+  <script src="scripts/core/theme.js"></script>
+  <script src="scripts/data/articles.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="scripts/feed/write.js"></script>
+</body>
+</html>

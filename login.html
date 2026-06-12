@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in · Midium</title>
+
+  <!-- Apply saved theme BEFORE paint to avoid a flash of the wrong theme -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem("midium-theme");
+      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.setAttribute("data-theme", saved || (prefersDark ? "dark" : "light"));
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/base.css" />
+  <link rel="stylesheet" href="styles/auth.css" />
+</head>
+<body>
+  <button class="theme-toggle floating" id="themeToggle" type="button" aria-label="Toggle dark mode">🌙</button>
+
+  <div class="auth-shell">
+
+    <!-- ============ LEFT: brand + mascot ============ -->
+    <aside class="brand-panel">
+      <!-- slow-drifting colour blobs behind everything -->
+      <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+
+      <div class="brand-logo">Midium<span class="dot">.</span></div>
+
+      <div class="brand-copy">
+        <div class="mascot-wrap">
+          <!-- Mo the cat 🐱 reading a book. The eyes peek over the book and
+               track the cursor; the cat lifts the book to hide its eyes when
+               the password field is focused. -->
+          <svg class="mascot" viewBox="0 0 240 240" aria-hidden="true">
+            <!-- ears (drawn first so the head overlaps their base) -->
+            <polygon points="68,54 104,22 114,60"  fill="#efa05a" stroke="#d98636" stroke-width="3" stroke-linejoin="round"/>
+            <polygon points="172,54 136,22 126,60" fill="#efa05a" stroke="#d98636" stroke-width="3" stroke-linejoin="round"/>
+            <polygon points="82,53 103,33 106,57"  fill="#f6c6c0"/>
+            <polygon points="158,53 137,33 134,57" fill="#f6c6c0"/>
+
+            <!-- head -->
+            <circle cx="120" cy="96" r="62" fill="#f8f1e6" stroke="#e6d6bd" stroke-width="3"/>
+
+            <!-- tabby forehead stripes -->
+            <path d="M120 36 v15"     stroke="#efa05a" stroke-width="5" stroke-linecap="round"/>
+            <path d="M104 39 l-4 13"  stroke="#efa05a" stroke-width="5" stroke-linecap="round"/>
+            <path d="M136 39 l4 13"   stroke="#efa05a" stroke-width="5" stroke-linecap="round"/>
+
+            <!-- cheek blush -->
+            <ellipse cx="78"  cy="106" rx="9" ry="5" fill="#f7cfc9"/>
+            <ellipse cx="162" cy="106" rx="9" ry="5" fill="#f7cfc9"/>
+
+            <!-- whiskers -->
+            <g stroke="#cdbfa6" stroke-width="2.5" stroke-linecap="round">
+              <path d="M84 102 L50 96"/><path d="M84 108 L48 108"/><path d="M84 114 L50 120"/>
+              <path d="M156 102 L190 96"/><path d="M156 108 L192 108"/><path d="M156 114 L190 120"/>
+            </g>
+
+            <!-- eyes (sclera) -->
+            <circle class="eye" cx="96"  cy="92" r="17" fill="#fff" stroke="#e3d8c4" stroke-width="2"/>
+            <circle class="eye" cx="144" cy="92" r="17" fill="#fff" stroke="#e3d8c4" stroke-width="2"/>
+
+            <!-- pupils (these groups get moved by JS) -->
+            <g class="pupil" id="pupilL">
+              <circle cx="96" cy="92" r="9" fill="#2b2620"/>
+              <circle cx="92.5" cy="88" r="2.6" fill="#fff"/>
+            </g>
+            <g class="pupil" id="pupilR">
+              <circle cx="144" cy="92" r="9" fill="#2b2620"/>
+              <circle cx="140.5" cy="88" r="2.6" fill="#fff"/>
+            </g>
+
+            <!-- nose + mouth -->
+            <polygon points="113,110 127,110 120,118" fill="#e58aa0" stroke="#d9748d" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M120 118 V123" stroke="#b08d6a" stroke-width="3" stroke-linecap="round"/>
+            <path d="M120 123 q-7 6 -13 1" stroke="#b08d6a" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M120 123 q7 6 13 1"   stroke="#b08d6a" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+            <!-- ===== the open book (rises to cover the eyes on password focus) ===== -->
+            <g class="book" id="book">
+              <!-- green cover peeking behind the pages -->
+              <polygon points="54,156 120,147 120,205 52,212" fill="#16791a" stroke="#0f5e12" stroke-width="2" stroke-linejoin="round"/>
+              <polygon points="186,156 120,147 120,205 188,212" fill="#1a8917" stroke="#0f5e12" stroke-width="2" stroke-linejoin="round"/>
+              <!-- cream pages -->
+              <polygon points="60,160 120,152 120,200 58,206" fill="#fdfaf2" stroke="#e2d6bd" stroke-width="1.5" stroke-linejoin="round"/>
+              <polygon points="180,160 120,152 120,200 182,206" fill="#fdfaf2" stroke="#e2d6bd" stroke-width="1.5" stroke-linejoin="round"/>
+              <!-- spine -->
+              <path d="M120 152 V200" stroke="#cdbfa3" stroke-width="2"/>
+              <!-- text lines -->
+              <g stroke="#ccc0a6" stroke-width="2" stroke-linecap="round">
+                <path d="M70 170 L112 165"/><path d="M70 178 L112 173"/><path d="M70 186 L112 181"/>
+                <path d="M128 165 L170 170"/><path d="M128 173 L170 178"/><path d="M128 181 L170 186"/>
+              </g>
+              <!-- paws gripping the book -->
+              <g>
+                <ellipse cx="58" cy="198" rx="17" ry="13" fill="#efa05a" stroke="#d98636" stroke-width="3"/>
+                <circle cx="50" cy="192" r="3.4" fill="#f7d9c2"/><circle cx="58" cy="189" r="3.4" fill="#f7d9c2"/><circle cx="66" cy="192" r="3.4" fill="#f7d9c2"/>
+              </g>
+              <g>
+                <ellipse cx="182" cy="198" rx="17" ry="13" fill="#efa05a" stroke="#d98636" stroke-width="3"/>
+                <circle cx="174" cy="192" r="3.4" fill="#f7d9c2"/><circle cx="182" cy="189" r="3.4" fill="#f7d9c2"/><circle cx="190" cy="192" r="3.4" fill="#f7d9c2"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <h1>Big ideas. <em>Midium</em> effort.</h1>
+        <p>A distinguished home for thought leadership, mild overconfidence, and takes of precisely medium temperature. Mo the cat observes your cursor with quiet, professional concern.</p>
+
+        <!-- rotating editorial ticker -->
+        <div class="ticker">
+          <div class="ticker-head">
+            <span class="ticker-dot"></span>
+            <span class="ticker-label">Now trending</span>
+          </div>
+          <span class="ticker-text" id="tickerText">“How I Made $0 Following My Passion.”</span>
+        </div>
+      </div>
+
+      <div class="brand-foot">© 2026 Midium — like Medium, but with a typo and a cat.</div>
+    </aside>
+
+    <!-- ============ RIGHT: form ============ -->
+    <main class="form-panel">
+      <div class="form-card">
+        <div class="form-head">
+          <h2 id="formTitle">Welcome back</h2>
+          <p id="formSubtitle">Sign in to pick up where you left off.</p>
+        </div>
+
+        <!-- Sign in / Sign up segmented toggle -->
+        <div class="seg" id="seg">
+          <span class="seg-thumb"></span>
+          <button id="tabSignin" class="active" type="button">Sign in</button>
+          <button id="tabSignup" type="button">Sign up</button>
+        </div>
+
+        <!-- OAuth -->
+        <div class="oauth-row">
+          <button class="btn-oauth" type="button" data-provider="google">
+            <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.57c2.08-1.92 3.27-4.74 3.27-8.09Z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.76c-.99.66-2.26 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84Z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38Z"/></svg>
+            Continue with Google
+          </button>
+          <button class="btn-oauth" type="button" data-provider="facebook">
+            <svg viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12a12 12 0 1 0-13.88 11.85v-8.38H7.08V12h3.04V9.36c0-3 1.79-4.67 4.53-4.67 1.31 0 2.69.24 2.69.24v2.95h-1.51c-1.49 0-1.96.93-1.96 1.88V12h3.33l-.53 3.47h-2.8v8.38A12 12 0 0 0 24 12Z"/></svg>
+            Continue with Facebook
+          </button>
+        </div>
+
+        <div class="divider">or</div>
+
+        <!-- EMAIL form -->
+        <form id="emailForm" autocomplete="on">
+          <div class="field" id="nameField">
+            <label for="name">Name</label>
+            <input id="name" type="text" placeholder="Ada Lovelace" />
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="you@example.com" required />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="input-wrap">
+              <input id="password" type="password" placeholder="••••••••" minlength="6" required />
+              <button class="reveal" id="revealPwd" type="button" tabindex="-1" aria-label="Show password">👁️</button>
+            </div>
+            <div class="caps-hint hidden" id="capsHint">⇪ Caps Lock is on</div>
+            <div class="strength hidden" id="strength" aria-hidden="true">
+              <span class="strength-bar"><i></i></span>
+              <span class="strength-label">Too short</span>
+            </div>
+          </div>
+          <button class="btn-primary" id="emailSubmit" type="submit">Sign in</button>
+        </form>
+
+        <p class="form-foot" id="formFoot">
+          New here? <button class="linkish" id="footSwitch" type="button">Create an account</button>
+        </p>
+
+        <p class="legal">By continuing you agree to Midium's Terms and acknowledge our Privacy Policy.</p>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-stack" id="toastStack"></div>
+
+  <!-- ===== Scripts (order matters) ===== -->
+  <script src="scripts/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="scripts/core/supabase-client.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="scripts/core/theme.js"></script>
+  <script src="scripts/auth/mascot-eyes.js"></script>
+  <script src="scripts/auth/auth.js"></script>
+  <script src="scripts/auth/interactions.js"></script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+/* =========================================================
+   BASE  —  design tokens + resets shared across all pages
+   ========================================================= */
+
+:root {
+  /* Brand palette (editorial / Medium-inspired) */
+  --ink:        #14130f;   /* near-black text            */
+  --ink-soft:   #4b4a45;   /* secondary text             */
+  --paper:      #faf9f6;   /* warm off-white background  */
+  --paper-2:    #ffffff;
+  --line:       #e7e4dc;   /* hairline borders           */
+  --accent:     #1a8917;   /* Medium green               */
+  --accent-2:   #0f6f0d;
+  --danger:     #c0392b;
+  --gold:       #e0a800;
+
+  /* Surfaces (themed so dark mode can override them) */
+  --surface:    #ffffff;   /* cards, oauth buttons, toggle thumb */
+  --field-bg:   #fdfdfb;   /* text inputs               */
+  --track-bg:   #f1efe8;   /* segmented-toggle track     */
+
+  /* Effects */
+  --radius:     16px;
+  --radius-sm:  10px;
+  --shadow:     0 10px 40px rgba(20, 19, 15, 0.10);
+  --shadow-lg:  0 24px 70px rgba(20, 19, 15, 0.18);
+
+  /* Type */
+  --serif: "Georgia", "Times New Roman", serif;
+  --sans:  "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* ---- DARK THEME ---- */
+:root[data-theme="dark"] {
+  --ink:        #ece9e1;
+  --ink-soft:   #a29e92;
+  --paper:      #121110;
+  --paper-2:    #1b1a16;
+  --line:       #322f28;
+  --accent:     #3fae3b;   /* brighter green for contrast on dark */
+  --accent-2:   #5cc257;
+  --surface:    #221f19;
+  --field-bg:   #19180f;
+  --track-bg:   #262219;
+  --shadow:     0 10px 40px rgba(0,0,0,.45);
+  --shadow-lg:  0 24px 70px rgba(0,0,0,.6);
+}
+
+html { transition: background .3s ease; }
+body, .topbar, .form-panel, .field input, .btn-oauth, .seg, .seg-thumb {
+  transition: background-color .3s ease, color .3s ease, border-color .3s ease;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+/* Disable the browser's pull-to-refresh / overscroll bounce so scrolling
+   up at the top never triggers a refresh. */
+html { overscroll-behavior: none; }
+
+body {
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--paper);
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: inherit; }
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+input, button { font-size: 1rem; }
+
+/* ---- Theme toggle button (shared) ---- */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px; height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1.15rem;
+  line-height: 1;
+  box-shadow: var(--shadow);
+  transition: transform .2s, background .25s, border-color .25s;
+}
+.theme-toggle:hover { transform: rotate(-12deg) scale(1.06); }
+/* floating variant for pages without a topbar (e.g. login) */
+.theme-toggle.floating {
+  position: fixed; top: 18px; right: 18px; z-index: 9997;
+}
+:root[data-theme="dark"] .demo-banner { top: 0; } /* keep banner above toggle */
+
+/* ---- Success overlay (shown briefly on login/signup before redirect) ---- */
+.success-overlay {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(10, 10, 8, .55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.success-card {
+  background: var(--surface); color: var(--ink);
+  border-radius: var(--radius);
+  padding: 38px 44px; text-align: center;
+  box-shadow: var(--shadow-lg);
+  width: min(88vw, 360px);
+  border: 1px solid var(--line);
+}
+.success-emoji {
+  font-size: 3.6rem; line-height: 1; margin-bottom: 12px;
+  display: inline-block;
+  filter: drop-shadow(0 8px 18px rgba(0,0,0,.28));
+}
+.success-card h3 { font-family: var(--serif); font-size: 1.6rem; margin-bottom: 6px; }
+.success-card p  { color: var(--ink-soft); font-size: .98rem; }
+
+/* ---- Toast notifications (shared) ---- */
+.toast-stack {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+  width: min(92vw, 420px);
+}
+.toast {
+  background: var(--ink);
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  font-size: .95rem;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  animation: toast-in .35s cubic-bezier(.2,.9,.3,1.2) both;
+}
+.toast.error   { background: var(--danger); }
+.toast.success { background: var(--accent); }
+.toast.info    { background: #2c2b27; }
+.toast .toast-icon { font-size: 1.1rem; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(16px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}

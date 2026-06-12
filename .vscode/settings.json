@@ -1,0 +1,20 @@
+{
+  "//": "Settings to stop Live Server from refreshing the page on its own.",
+
+  "// autosave": "Don't auto-save files (auto-save => Live Server reload on every keystroke pause).",
+  "files.autoSave": "off",
+
+  "// wait": "Small debounce before Live Server reloads, so a burst of file touches = one reload.",
+  "liveServer.settings.wait": 400,
+
+  "// ignoreFiles": "Don't reload when these change (incl. files OneDrive re-touches in the background).",
+  "liveServer.settings.ignoreFiles": [
+    "**/.git/**",
+    "**/.vscode/**",
+    "**/node_modules/**",
+    "**/*.md",
+    "**/*.scss",
+    "**/*.sass",
+    "**/*.ts"
+  ]
+}
