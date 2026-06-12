@@ -121,12 +121,29 @@
   }
 
   // resolves with the session the moment Supabase establishes it (no polling/race)
+  // Set up listener BEFORE calling getSession to avoid race condition
   function waitForSession(timeoutMs) {
     return new Promise((resolve) => {
       let done = false;
       const finish = (s) => { if (!done) { done = true; resolve(s); } };
-      sb.auth.onAuthStateChange((_e, session) => { if (session) finish(session); });
-      sb.auth.getSession().then(({ data }) => { if (data.session) finish(data.session); });
+      
+      // Register listener first (this will fire if session changes)
+      const sub = sb.auth.onAuthStateChange((_e, session) => { 
+        if (session) {
+          try { sub.data.subscription.unsubscribe(); } catch (_) {}
+          finish(session);
+        }
+      });
+      
+      // Then check for existing session (catches already-loaded sessions)
+      sb.auth.getSession().then(({ data }) => { 
+        if (data.session) {
+          try { sub.data.subscription.unsubscribe(); } catch (_) {}
+          finish(data.session);
+        }
+      });
+      
+      // Timeout fallback
       setTimeout(() => finish(null), timeoutMs || 4000);
     });
   }
@@ -150,8 +167,9 @@
     }
 
     // opened the login page while already signed in → go home
-    const { data } = await sb.auth.getSession();
-    if (data.session) {
+    // Use waitForSession to handle case where session is still being loaded from storage
+    const session = await waitForSession(2000);
+    if (session) {
       toast("You're already signed in — taking you home.", "success", 2500);
       setTimeout(goHome, 1200);
     }
@@ -255,14 +273,28 @@
         } else if (data.user && !data.session) {
           toast("Almost there! Check your inbox to confirm your email.", "success", 6000);
         } else {
-          celebrateSignup(goHome);
+          // Wait for the session to actually be established before celebrating/redirecting
+          const session = await waitForSession(3000);
+          if (session) {
+            celebrateSignup(goHome);
+          } else {
+            toast("Account created but taking a moment to sync… redirecting now.", "info");
+            setTimeout(goHome, 800);
+          }
         }
       } else {
         const { error } = await sb.auth.signInWithPassword({ email, password });
         if (error) {
           toast(error.message.includes("Invalid") ? "Wrong email or password. Try again?" : error.message, "error");
         } else {
-          celebrateSignin(goHome);
+          // Wait for the session to actually be established before celebrating/redirecting
+          const session = await waitForSession(3000);
+          if (session) {
+            celebrateSignin(goHome);
+          } else {
+            toast("Session established but taking a moment to sync… redirecting now.", "info");
+            setTimeout(goHome, 800);
+          }
         }
       }
     } catch (err) {

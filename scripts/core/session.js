@@ -9,13 +9,21 @@ window.Session = (function () {
   const live = window.isSupabaseConfigured();
 
   // Wait for Supabase to finish reading the OAuth token from the URL.
+  // Set up listener BEFORE calling getSession to avoid race condition
   function waitForSession(timeoutMs) {
     return new Promise((resolve) => {
       let done = false;
       const finish = (s) => { if (!done) { done = true; resolve(s); } };
+      
+      // Register listener first (this will fire if session changes)
       const sub = window.sb.auth.onAuthStateChange((_event, session) => {
-        if (session) { try { sub.data.subscription.unsubscribe(); } catch (_) {} finish(session); }
+        if (session) {
+          try { sub.data.subscription.unsubscribe(); } catch (_) {}
+          finish(session);
+        }
       });
+      
+      // Then check for existing session (catches already-loaded sessions)
       setTimeout(async () => {
         const { data } = await window.sb.auth.getSession();
         finish(data.session || null);

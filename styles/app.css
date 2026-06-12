@@ -120,6 +120,11 @@
   height: 132px; display: flex; align-items: center; justify-content: center;
   font-size: 3rem; position: relative;
 }
+
+/* hide emoji when there's a cover image */
+.card-cover[style*="url"] .card-emoji {
+  display: none;
+}
 .card-cover .you-badge {
   position: absolute; top: 10px; left: 10px;
   background: rgba(0,0,0,.35); color: #fff; backdrop-filter: blur(4px);
@@ -195,14 +200,29 @@
 
 /* cover preview tile in composer */
 .cover-preview {
+  position: relative;
   height: 120px; border-radius: var(--radius); margin-bottom: 24px;
   display: flex; align-items: center; justify-content: center; font-size: 3rem;
 }
 
+/* hide emoji when there's a cover image */
+.cover-preview[style*="url"] #coverEmoji,
+.cover-preview[style*="url"] > span {
+  display: none;
+}
+
 /* ---------- Article reader ---------- */
 .article-wrap { padding: 8px 0 90px; }
-.article-cover { height: 220px; border-radius: var(--radius);
-  display: flex; align-items: center; justify-content: center; font-size: 5rem; margin: 24px 0 28px; }
+.article-cover { 
+  position: relative;
+  height: 220px; border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center; font-size: 5rem; margin: 24px 0 28px; 
+}
+
+/* hide emoji when there's a cover image */
+.article-cover[style*="url"] .cover-emoji {
+  display: none;
+}
 .article-tag { font-size: .76rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-2); }
 .article-title { font-family: var(--serif); font-size: clamp(2rem, 4.5vw, 3rem); line-height: 1.12; margin: 8px 0 10px; }
 .article-dek { font-size: 1.25rem; color: var(--ink-soft); font-style: italic; line-height: 1.5; margin-bottom: 20px; }
