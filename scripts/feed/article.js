@@ -1,7 +1,9 @@
 /* =========================================================
    READER (reel-style)
    - opens the clicked article, then scrolls into the next one
-   - paywall enforced per article; pauses at the free limit
+   - an article only counts toward the free limit once it's VIEWED
+     (so pre-loading the next one doesn't burn a free read)
+   - paywall enforced per article; stops at the free limit
    ========================================================= */
 
 (function () {
@@ -10,22 +12,13 @@
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   const plainGradient = (c) => `linear-gradient(135deg, ${c}, color-mix(in srgb, ${c} 50%, #000))`;
-  // tint a real cover photo with the article's accent for an editorial look
   function coverStyle(a) {
-    if (a.cover) return `background-image: linear-gradient(135deg, ${a.accent}cc, ${a.accent}66), url('${a.cover}');`;
+    if (a.cover) return `background-color:${a.accent}; background-image: linear-gradient(135deg, ${a.accent}cc, ${a.accent}66), url('${a.cover}');`;
     return `background: ${plainGradient(a.accent)};`;
   }
   const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
   const paragraphs = (body) =>
     esc(body).split(/\n{2,}/).map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
-
-  function toast(msg) {
-    const t = document.createElement("div");
-    t.className = "toast success";
-    t.innerHTML = `<span class="toast-icon">✅</span><span>${msg}</span>`;
-    $("#toastStack").appendChild(t);
-    setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 300); }, 2400);
-  }
 
   const memberPill = `<span class="meter-pill member">★ Member · unlimited reading</span>`;
   const ownPill = `<span class="meter-pill">Your post · always free</span>`;
@@ -34,6 +27,7 @@
   const stories = $("#stories");
   const sentinel = $("#sentinel");
   let all = [], cursor = 0, loading = false, paused = false, ended = false, first = true;
+  const seen = new Set();
 
   function storyHTML(a) {
     const claps = MidiumArticles.clapsFor(a);
@@ -69,7 +63,7 @@
     else meter.innerHTML = leftPill(Paywall.remainingFree());
   }
 
-  // membership just gained: unblur everything, refresh meters, resume scrolling
+  // membership just gained: unblur everything, refresh meters, resume
   function onUnlock() {
     document.querySelectorAll(".article-body.paywalled").forEach((el) => el.classList.remove("paywalled"));
     stories.querySelectorAll(".story").forEach((el) => {
@@ -79,6 +73,22 @@
     paused = false;
     loadNext();
   }
+
+  // a story scrolled into view -> now it counts (record read or show paywall)
+  const viewObserver = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting || e.intersectionRatio < 0.3) return;
+      const el = e.target;
+      if (seen.has(el)) return;
+      seen.add(el);
+      viewObserver.unobserve(el);
+      const a = all.find((x) => x.id === el.dataset.id);
+      if (!a) return;
+      const gated = Paywall.gate(a, { blurTarget: el.querySelector(".article-body"), onUnlock });
+      refreshMeter(el, a);
+      if (gated) paused = true; // don't load more behind the paywall
+    });
+  }, { threshold: [0, 0.3] });
 
   function mountStory(a) {
     if (!first) {
@@ -110,9 +120,8 @@
       }
     });
 
-    const gated = Paywall.gate(a, { blurTarget: storyEl.querySelector(".article-body"), onUnlock });
     refreshMeter(storyEl, a);
-    return gated;
+    viewObserver.observe(storyEl); // gate when it scrolls into view
   }
 
   function loadNext() {
@@ -126,9 +135,8 @@
       return;
     }
     loading = true;
-    const gated = mountStory(all[cursor]);
+    mountStory(all[cursor]);
     cursor++;
-    if (gated) paused = true; // stop until they subscribe
     loading = false;
   }
 
@@ -154,7 +162,7 @@
 
     const io = new IntersectionObserver((entries) => {
       if (entries.some((e) => e.isIntersecting)) loadNext();
-    }, { rootMargin: "400px" });
+    }, { rootMargin: "300px" });
     io.observe(sentinel);
   }
 

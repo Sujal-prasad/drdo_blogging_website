@@ -13,6 +13,54 @@ window.MidiumArticles = (function () {
   /* ---- Built-in sample articles ---- */
   const SEED = [
     {
+      id: "seed-finish", title: "The Lost Art of Finishing What You Start",
+      dek: "Beginning has never been easier or more celebrated. Finishing is where the real work — and the real reward — lives.",
+      author: "Imogen Clarke", tag: "Productivity", accent: "#c0392b", emoji: "🏁",
+      date: "2026-06-11", claps: 1342,
+      body:
+`We are surrounded by beginnings. New projects, new apps, new year's resolutions — starting has never been easier or more celebrated. Finishing, by contrast, is quiet, unglamorous, and increasingly rare.
+
+There is a reason for this. Beginning is fueled by novelty and optimism; the project exists, untarnished, only in the imagination. Finishing means confronting the gap between that imagined version and the messy, compromised, real one. 🪛 The last ten percent — the debugging, the proofreading, the final coat of paint — is where the excitement runs out and the discipline begins.
+
+Psychologists describe the pull of unfinished tasks as the Zeigarnik effect: open loops occupy the mind, nagging quietly for attention. A dozen half-finished projects don't just sit on a shelf; they sit in your head, each one drawing a little energy. Finishing is, among other things, an act of mental hygiene.
+
+The craftsperson's secret is not superior motivation but a different relationship with the word "done." Done is not perfect; done is shipped. A finished thing that exists in the world will teach you more than a perfect thing that never leaves your desk — because the world answers back, and your imagination only flatters.
+
+So the advice is almost embarrassingly simple: finish things. Choose fewer beginnings and grant them the dignity of an ending. The satisfaction waiting at the close of a completed task is one of the few reliable pleasures that never quite wears off. 🏁`
+    },
+    {
+      id: "seed-editing", title: "Why the Best Writers Are Ruthless Editors",
+      dek: "Good writing is mostly rewriting — and rewriting is mostly deleting.",
+      author: "Oliver Hanson", tag: "Culture", accent: "#1f9e8a", emoji: "✒️",
+      date: "2026-06-10", claps: 988,
+      body:
+`Ask a room of people what makes good writing and most will point to the writing itself — the vocabulary, the turns of phrase, the flashes of brilliance. Ask a professional, and they'll point to the editing.
+
+Good writing is rewriting. ✒️ The first draft exists only to be wrong on paper, to get the raw clay onto the wheel. The real work begins afterward, in the unglamorous act of cutting: removing the clever line that flatters the writer but doesn't serve the reader, collapsing three sentences into one, deleting the very paragraph you were proudest of because the piece is sharper without it.
+
+"Kill your darlings," the old advice goes, and it endures because it is so hard to follow. The sentences we cling to are often the ones doing the least work — ornaments mistaken for structure.
+
+Editing is also where thinking gets sharpened. Vague writing is almost always a symptom of vague thinking; forcing a sentence to be precise forces you to discover what you actually believe. This is why writing is such a powerful tool for thought — and why handing it over wholesale to a machine quietly costs you something you may not notice until it's gone.
+
+None of this requires rare talent so much as patience and honesty: the willingness to read your own work as a stranger would, and to serve the reader over the author. The page does not care how clever you felt while writing it. It only cares whether it is clear. 🖊️`
+    },
+    {
+      id: "seed-walking", title: "What History's Great Thinkers Knew About Walking",
+      dek: "From Aristotle to Darwin, the same humble habit keeps showing up behind big ideas.",
+      author: "Beatrix Lowe", tag: "Health", accent: "#1a8917", emoji: "🚶",
+      date: "2026-06-09", claps: 1175,
+      body:
+`Charles Darwin kept a gravel path behind his house that he called his "thinking path." He walked it several times a day, working through problems step by step — sometimes literally kicking stones off the trail to count his laps, so he wouldn't have to interrupt his thoughts to keep track.
+
+He was in good company. 🚶 Aristotle taught while walking; his school was named the Peripatetic, from the Greek for "given to walking." Nietzsche claimed that all truly great thoughts are conceived while walking. Dickens roamed London for miles at night. The pattern is too consistent to be a coincidence.
+
+Modern research has caught up to the intuition. Studies find that walking — especially outdoors — measurably boosts creative thinking, both during the walk and for a while afterward. The gentle, rhythmic, semi-automatic motion seems to occupy the body just enough to free the mind, letting it wander and make the loose associations creativity depends on.
+
+There is also the matter of attention. A walk with no destination, and ideally no headphones, is one of the last socially acceptable forms of doing nothing. It creates the empty space in which ideas surface — the same space we now reflexively fill with a screen at every red light and elevator ride.
+
+The prescription is cheap and ancient: when stuck, go for a walk. Leave the phone, or at least the podcast, behind. Let the problem rattle around while your feet do the thinking. The answer, more often than not, is somewhere along the path. 🌳`
+    },
+    {
       id: "seed-attention", title: "Designing Technology That Respects Your Time",
       dek: "The best products give your attention back instead of competing for more of it.",
       author: "Maya Iyer", tag: "Technology", accent: "#2f6db0", emoji: "⏳",
@@ -284,9 +332,17 @@ The result, when it works, looks effortless — even obvious. That simplicity is
     return Math.max(1, Math.round(words / 200));
   }
 
+  // give seed articles a real (grayscale, editorial) cover photo if they don't have one;
+  // the feed/reader tints it with the article's accent for a cohesive branded look.
+  function withCover(a) {
+    if (!a.cover) a.cover = "https://picsum.photos/seed/mid-" + a.id + "/1200/640?grayscale";
+    return a;
+  }
+
   function getAll() {
     const user = loadUser();
-    return [...user, ...SEED].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const seed = SEED.map(withCover);
+    return [...user, ...seed].sort((a, b) => new Date(b.date) - new Date(a.date));
   }
 
   function getById(id) { return getAll().find((a) => a.id === id) || null; }

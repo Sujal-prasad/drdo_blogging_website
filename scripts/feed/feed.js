@@ -22,7 +22,7 @@
   // a real cover photo tinted with the article's accent, or a plain gradient
   const coverStyle = (a) =>
     a.cover
-      ? `background-image: linear-gradient(135deg, ${a.accent}cc, ${a.accent}66), url('${a.cover}');`
+      ? `background-color:${a.accent}; background-image: linear-gradient(135deg, ${a.accent}cc, ${a.accent}66), url('${a.cover}');`
       : `background: linear-gradient(135deg, ${a.accent}, color-mix(in srgb, ${a.accent} 50%, #000));`;
 
   const fmtDate = (d) =>
