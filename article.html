@@ -7,6 +7,12 @@
 
   <script>
     (function () {
+      // hide protected content until auth confirms a session (safety release after 5s)
+      document.documentElement.classList.add("auth-gate");
+      // fail CLOSED: if auth never confirms within 7s, go to login instead of revealing
+      setTimeout(function () {
+        if (document.documentElement.classList.contains("auth-gate")) location.replace("login.html");
+      }, 7000);
       var saved = localStorage.getItem("midium-theme");
       var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
       document.documentElement.setAttribute("data-theme", saved || (prefersDark ? "dark" : "light"));

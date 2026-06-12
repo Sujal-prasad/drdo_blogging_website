@@ -59,6 +59,10 @@ html, body { height: 100%; }
    up at the top never triggers a refresh. */
 html { overscroll-behavior: none; }
 
+/* Protected pages stay hidden until auth is confirmed (prevents a flash of
+   the page before an unauthenticated visitor is redirected to login). */
+html.auth-gate body { visibility: hidden; }
+
 body {
   font-family: var(--sans);
   color: var(--ink);

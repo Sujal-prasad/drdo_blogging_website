@@ -161,6 +161,12 @@
 }
 .seg.signup .seg-thumb { transform: translateX(100%); }
 
+/* dark mode: lift the active pill above the track so the selection is visible
+   (otherwise the pill and track are both near-black — "black on black") */
+:root[data-theme="dark"] .seg { background: #14130f; }
+:root[data-theme="dark"] .seg .seg-thumb { background: #3a352a; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+:root[data-theme="dark"] .seg button.active { color: #fff; }
+
 /* OAuth buttons */
 .oauth-row { display: flex; flex-direction: column; gap: 10px; }
 .btn-oauth {

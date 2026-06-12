@@ -43,6 +43,7 @@ window.Paywall = (function () {
     ov.className = "pay-overlay";
     ov.innerHTML = `
       <div class="pay-card" role="dialog" aria-modal="true">
+        <div class="pay-brand">⚡ RazorPlay</div>
         <div class="pay-head">
           <span class="pay-kicker">Midium Membership</span>
           <h2>You've reached your free limit</h2>
@@ -89,7 +90,7 @@ window.Paywall = (function () {
 
         <button class="pay-pay" id="pf-pay">Pay ${PRICE}</button>
         <button class="pay-later" id="pf-later">Maybe later</button>
-        <p class="pay-secure">🔒 This is a simulated checkout — no real payment is taken.</p>
+        <p class="pay-secure">🔒 Secured by RazorPlay™ — simulated checkout, no real payment is taken.</p>
       </div>`;
     document.body.appendChild(ov);
 

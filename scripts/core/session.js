@@ -25,6 +25,7 @@ window.Session = (function () {
 
   async function get() {
     if (!live) return { preview: true, user: null };
+    if (!window.sb) return { preview: false, user: null }; // client failed to init => logged out
     const { data } = await window.sb.auth.getSession();
     // Just landed from an OAuth redirect but the token is still being processed?
     // Wait for it instead of treating the user as logged out (which causes a bounce).
@@ -54,8 +55,9 @@ window.Session = (function () {
     const s = await get();
     if (!s.preview && !s.user) {
       window.location.href = window.APP_CONFIG.LOGIN_PATH;
-      return null;
+      return null; // page stays hidden by the auth-gate during the redirect
     }
+    document.documentElement.classList.remove("auth-gate"); // reveal the page
     return s;
   }
 

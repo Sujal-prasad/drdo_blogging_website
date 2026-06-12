@@ -18,9 +18,9 @@ UI/UX — not a generic template.
   **eyes follow your cursor**, and who **lifts the book to hide its eyes** when you focus
   the password field.
 - **Sign in / Sign up** in one page with an animated segmented toggle.
-- **Auth methods:** Email + password, **Google**, and **GitHub** — all wired to
-  Supabase, all on its free tier. *(Phone/SMS login was left out because it needs a paid
-  SMS provider; Facebook was dropped for its heavy app-review setup.)*
+- **Auth methods:** Email + password, **Google**, and **Discord** — wired to Supabase,
+  all free. *(Phone/SMS needs a paid provider; Facebook and GitHub OAuth were dropped to
+  keep setup simple.)*
 - **Smart redirects:** already-logged-in users skip the form; new vs returning users
   are routed correctly ("you already have an account → switch to sign in").
 - **Distinct success animations:** an elegant *"Welcome back"* puff for **login**, and a
@@ -65,7 +65,7 @@ drdo_blogging_website/
 │   │   ├── session.js           # Auth guard + display name (shared by app pages)
 │   │   └── theme.js             # Dark/light toggle + persistence
 │   ├── auth/
-│   │   ├── auth.js              # Sign in / sign up / Google + GitHub OAuth / redirects
+│   │   ├── auth.js              # Sign in / sign up / Google + Discord OAuth / redirects
 │   │   ├── mascot-eyes.js       # Cursor-tracking eyes + book-cover animation
 │   │   └── interactions.js      # Entrance anim, password UX, ticker
 │   ├── data/
@@ -92,7 +92,7 @@ add the feed, reels, and payment modules.
 3. It opens at `http://127.0.0.1:5500/login.html`.
 
 > ⚠️ Always run via Live Server (an `http://localhost` URL) — **not** by double-clicking
-> the file (`file://`). Google/GitHub OAuth requires a real HTTP origin to work.
+> the file (`file://`). Google OAuth requires a real HTTP origin to work.
 
 Until you add Supabase keys you'll see a **Preview mode** banner — that's expected.
 
@@ -142,10 +142,9 @@ Until you add Supabase keys you'll see a **Preview mode** banner — that's expe
    - Create OAuth credentials at **console.cloud.google.com** (APIs & Services → Credentials).
    - Authorized redirect URI: `https://<your-project-ref>.supabase.co/auth/v1/callback`.
    - Paste the Client ID & Secret into Supabase.
-5. **GitHub login:** Supabase → Providers → GitHub → enable.
-   - Create an OAuth App at **github.com/settings/developers** → New OAuth App.
-   - Authorization callback URL: `https://<your-project-ref>.supabase.co/auth/v1/callback`.
-   - Paste the Client ID & generated Client Secret into Supabase.
+5. **Discord login:** create an app at **discord.com/developers/applications** → OAuth2 →
+   add redirect `https://<your-project-ref>.supabase.co/auth/v1/callback` → copy the
+   Client ID + Client Secret → paste into Supabase → Providers → Discord → enable → save.
 
 > 💸 Everything above is on Supabase's **free tier**. Phone/SMS login was deliberately
 > skipped — it's the one auth method that needs a paid SMS provider.

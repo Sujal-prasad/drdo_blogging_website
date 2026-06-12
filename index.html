@@ -8,11 +8,21 @@
   <!-- Apply saved theme BEFORE paint to avoid a flash of the wrong theme -->
   <script>
     (function () {
+      // hide protected content until auth.js confirms a session (safety release after 5s)
+      document.documentElement.classList.add("auth-gate");
+      // fail CLOSED: if auth never confirms within 7s, go to login instead of revealing
+      setTimeout(function () {
+        if (document.documentElement.classList.contains("auth-gate")) location.replace("login.html");
+      }, 7000);
       var saved = localStorage.getItem("midium-theme");
       var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
       document.documentElement.setAttribute("data-theme", saved || (prefersDark ? "dark" : "light"));
-      // capture OAuth arrival BEFORE supabase strips the token from the URL hash
-      window.__cameFromOAuth = window.location.hash.indexOf("access_token") !== -1;
+      // capture OAuth result BEFORE supabase strips it from the URL.
+      var h = window.location.hash || "", q = window.location.search || "";
+      window.__cameFromOAuth =
+        h.indexOf("access_token") !== -1 || /[?&]code=/.test(q); // implicit OR pkce
+      var em = h.match(/error_description=([^&]+)/) || q.match(/error_description=([^&]+)/);
+      if (em) { try { sessionStorage.setItem("midium-oauth-error", decodeURIComponent(em[1].replace(/\+/g, " "))); } catch (e) {} }
     })();
   </script>
 

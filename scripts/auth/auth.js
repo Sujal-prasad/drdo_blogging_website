@@ -103,16 +103,60 @@
     if (tt) tt.style.top = "46px";
   }
 
-  /* ---------- redirect if ALREADY logged in ---------- */
-  async function checkExistingSession() {
+  /* ---------- surface any OAuth error from the last attempt ---------- */
+  try {
+    const oerr = sessionStorage.getItem("midium-oauth-error");
+    if (oerr) { toast("Sign-in failed: " + oerr, "error", 8000); sessionStorage.removeItem("midium-oauth-error"); }
+  } catch (_) {}
+
+  /* ---------- OAuth return + already-logged-in handling ---------- */
+  // OAuth (Google/GitHub) redirects back HERE, so we handle the session on this
+  // page using an event listener — which fires exactly when the session is ready.
+  const cameFromOAuth =
+    location.hash.indexOf("access_token") !== -1 || /[?&]code=/.test(location.search);
+
+  function isNewUser(user) {
+    if (!user || !user.created_at || !user.last_sign_in_at) return false;
+    return Math.abs(new Date(user.last_sign_in_at) - new Date(user.created_at)) < 8000;
+  }
+
+  // resolves with the session the moment Supabase establishes it (no polling/race)
+  function waitForSession(timeoutMs) {
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = (s) => { if (!done) { done = true; resolve(s); } };
+      sb.auth.onAuthStateChange((_e, session) => { if (session) finish(session); });
+      sb.auth.getSession().then(({ data }) => { if (data.session) finish(data.session); });
+      setTimeout(() => finish(null), timeoutMs || 4000);
+    });
+  }
+
+  async function handleEntry() {
     if (!live) return;
+
+    // surface any provider error returned in the URL
+    const errMatch = location.hash.match(/error_description=([^&]+)/) ||
+                     location.search.match(/error_description=([^&]+)/);
+    if (errMatch) toast("Sign-in failed: " + decodeURIComponent(errMatch[1].replace(/\+/g, " ")), "error", 8000);
+
+    if (cameFromOAuth) {
+      const session = await waitForSession();
+      if (session) {
+        (isNewUser(session.user) ? celebrateSignup : celebrateSignin)(goHome);
+      } else if (!errMatch) {
+        toast("Sign-in didn't complete. Please try again.", "error");
+      }
+      return;
+    }
+
+    // opened the login page while already signed in → go home
     const { data } = await sb.auth.getSession();
     if (data.session) {
       toast("You're already signed in — taking you home.", "success", 2500);
       setTimeout(goHome, 1200);
     }
   }
-  checkExistingSession();
+  handleEntry();
 
   /* =========================================================
      UI: sign in / sign up toggle
@@ -163,12 +207,14 @@
         celebrateFor(goHome);
         return;
       }
+      btn.disabled = true;
       const { error } = await sb.auth.signInWithOAuth({
         provider,
+        // return to the feed (the URL already confirmed working in your allow-list)
         options: { redirectTo: window.location.origin + "/" + CFG.HOME_PATH }
       });
-      if (error) toast(error.message, "error");
-      // On success the browser is redirected by Supabase automatically.
+      if (error) { toast(error.message, "error"); btn.disabled = false; }
+      // On success the browser is redirected by the provider automatically.
     });
   });
 
