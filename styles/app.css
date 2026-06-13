@@ -149,6 +149,8 @@
 .card-meta { display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--ink-soft); margin-top: 4px; }
 .card-meta .dotsep { opacity: .5; }
 .card-meta .claps { margin-left: auto; }
+.card-author { cursor: pointer; font-weight: 600; }
+.card-author:hover { color: var(--ink); text-decoration: underline; }
 
 .empty { text-align: center; color: var(--ink-soft); padding: 60px 0; }
 

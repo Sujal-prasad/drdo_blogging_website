@@ -51,35 +51,33 @@ drdo_blogging_website/
 ├── index.html              # Feed (home + OAuth landing; kept at root)
 ├── pages/                  # all other routes (root-absolute paths, so depth is safe)
 │   ├── login.html          # Auth page (sign in / sign up)
-│   ├── write.html          # Composer (cover + in-body photo upload)
-│   ├── article.html        # Reel-style reader (scrolls into the next article)
+│   ├── write.html          # Composer (cover + in-body photo upload; ?edit=<id> to edit)
+│   ├── article.html        # Reel-style reader + comments/responses
+│   ├── author.html         # Author profile (their posts + follow)
 │   └── profile.html        # Profile/settings (name, appearance, password, membership)
+├── supabase/schema.sql     # DB tables + RLS (run in Supabase SQL editor)
 ├── README.md
 ├── .vscode/settings.json   # Live Server tweaks (stop self-refresh)
-├── styles/
-│   ├── base.css            # Design tokens, dark theme, toasts, overlays
-│   ├── auth.css            # Auth-page layout, mascot, aurora, form components
-│   └── app.css             # Topbar, buttons, cards, reader, paywall, profile, share
+├── styles/  (base.css · auth.css · app.css)
 ├── scripts/
 │   ├── config.js           # 🔑 YOUR Supabase keys + HOME_PATH / LOGIN_PATH
 │   ├── core/
 │   │   ├── supabase-client.js   # Shared Supabase client (or preview fallback)
-│   │   ├── session.js           # Auth guard + display name (shared by app pages)
-│   │   └── theme.js             # Dark/light toggle + persistence
-│   ├── auth/
-│   │   ├── auth.js              # Sign in / sign up / Google + Discord OAuth / redirects
-│   │   ├── mascot-eyes.js       # Cursor-tracking eyes + book-cover animation
-│   │   └── interactions.js      # Entrance anim, password UX, ticker
+│   │   ├── session.js           # Auth guard + display name + deep-link return
+│   │   ├── theme.js             # Theme switch + persistence
+│   │   └── ui.js                # Shared styled confirm dialog (UI.confirm)
+│   ├── auth/                # auth.js · mascot-eyes.js · interactions.js
 │   ├── data/
-│   │   └── articles.js          # Article store: sample posts + your localStorage posts
+│   │   ├── articles.js          # Articles store (Supabase + bookmarks + claps)
+│   │   └── social.js            # Comments + follows (Supabase)
 │   └── feed/
-│       ├── feed.js              # Feed + search/tag filters + membership button
-│       ├── write.js             # Composer (photo upload, draft autosave, publish)
-│       ├── article.js           # Reel reader (scroll-to-next, clap-once, share)
-│       ├── paywall.js           # 5-free paywall + RazorPlay Card/UPI/Net-banking checkout
+│       ├── feed.js              # Feed: search, tag filter, sort, bookmarks, membership
+│       ├── write.js             # Composer (publish/edit, photo upload, autosave)
+│       ├── article.js           # Reel reader (scroll-to-next, clap-once, share, comments)
+│       ├── paywall.js           # 5-free paywall + RazorPlay checkout (+ bank page)
+│       ├── author.js            # Author profile page + follow
 │       └── profile.js           # Profile/settings logic
-└── assets/
-    └── img/                # (images added as the project grows)
+└── assets/img/
 ```
 
 HTML pages live at the root as route entry points (keeps links and OAuth redirects
@@ -204,12 +202,19 @@ and **recency**. Just append to the array to add more seed content.
 - Cover art: every article now has a real **editorial cover photo** tinted with its accent
   colour (in feed cards and the reader), with emojis used as accents.
 
-### Phase 5 — Real database (Supabase) ✅ *(articles wired)*
-Published **articles now live in Supabase** (`supabase/schema.sql` → run once in the SQL
-Editor), so posts are **shared across all users and devices**. The store
-(`scripts/data/articles.js`) loads/inserts/deletes via Supabase with Row-Level Security;
-the sample "house" articles stay client-side. Claps, reads, and membership remain
-client-side (the simulated paywall) and can be moved to the DB later.
+### Phase 5 — Real database (Supabase) ✅
+Published **articles, comments, and follows live in Supabase** (`supabase/schema.sql` →
+run it in the SQL Editor; re-run after pulling new tables), shared across all users and
+devices, with Row-Level Security. Sample "house" articles, bookmarks, claps, reads, and
+membership stay client-side (the simulated paywall) and can move to the DB later.
+
+### Phase 5.5 — Community & feed features ✅
+- **Sort the feed** — Newest / Most clapped / Quickest read.
+- **Bookmarks / reading list** — tap 🔖 on any card or in the reader; a **Saved** filter.
+- **Edit your own posts** — `write.html?edit=<id>` (an "Edit" link shows on your posts).
+- **Comments / responses** — under each real article (post + delete your own).
+- **Follow authors + author pages** — click an author's name anywhere → their profile
+  (`author.html`) with their posts, follower count, and a **Follow** button.
 
 ### Phase 6 — Deploy to Vercel *(planned — do last)*
 The site is fully static, so Vercel deploys it with **no build step**:

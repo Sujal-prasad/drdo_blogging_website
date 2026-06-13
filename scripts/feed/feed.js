@@ -44,7 +44,9 @@
           <h3 class="card-title">${esc(a.title)}</h3>
           <p class="card-dek">${esc(a.dek)}</p>
           <div class="card-meta">
-            <span>${esc(a.author)}</span>
+            ${a.authorId
+              ? `<span class="card-author" data-author="${esc(a.authorId)}">${esc(a.author)}</span>`
+              : `<span>${esc(a.author)}</span>`}
             <span class="dotsep">·</span>
             <span>${a.readingTime || MidiumArticles.readingTime(a.body)} min read</span>
             <span class="dotsep">·</span>
@@ -190,15 +192,22 @@
       renderChips();
       render();
     });
-    // bookmark toggles (delegated; prevent the card link from navigating)
+    // card interactions (delegated; prevent the card link from navigating)
     $("#cards").addEventListener("click", (e) => {
       const bm = e.target.closest(".bm-btn");
-      if (!bm) return;
-      e.preventDefault(); e.stopPropagation();
-      const on = MidiumArticles.toggleBookmark(bm.dataset.bm);
-      bm.classList.toggle("saved", on);
-      toast(on ? "Saved to your reading list." : "Removed from your reading list.");
-      if (state.tag === "Saved") render();
+      if (bm) {
+        e.preventDefault(); e.stopPropagation();
+        const on = MidiumArticles.toggleBookmark(bm.dataset.bm);
+        bm.classList.toggle("saved", on);
+        toast(on ? "Saved to your reading list." : "Removed from your reading list.");
+        if (state.tag === "Saved") render();
+        return;
+      }
+      const au = e.target.closest(".card-author");
+      if (au) {
+        e.preventDefault(); e.stopPropagation();
+        location.href = "/pages/author.html?id=" + encodeURIComponent(au.dataset.author);
+      }
     });
   }
 
