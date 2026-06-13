@@ -20,7 +20,9 @@
   const paragraphs = (body) =>
     esc(body).split(/\n{2,}/).map((p) => {
       const m = p.match(/^!\[[^\]]*\]\((.+)\)$/s); // an image block: ![alt](url)
-      if (m) return `<img class="article-img" src="${m[1]}" alt="" loading="lazy">`;
+      if (m && /^(data:image\/|https?:\/\/)/.test(m[1])) {
+        return `<img class="article-img" src="${m[1]}" alt="" loading="lazy">`;
+      }
       return `<p>${p.replace(/\n/g, "<br>")}</p>`;
     }).join("");
 
@@ -181,11 +183,13 @@
     storyEl.querySelector(".share-btn").addEventListener("click", () => openShareSheet(a));
 
     const del = storyEl.querySelector(".danger-link");
-    if (del) del.addEventListener("click", async () => {
-      if (confirm("Delete this post? This can't be undone.")) {
-        await MidiumArticles.deleteArticle(a.id);
-        window.location.href = "/index.html";
-      }
+    if (del) del.addEventListener("click", () => {
+      UI.confirm({
+        title: "Delete this post?", emoji: "🗑️",
+        body: "This permanently removes the article. This can't be undone.",
+        confirmText: "Delete", cancelText: "Keep it", danger: true,
+        onConfirm: async () => { await MidiumArticles.deleteArticle(a.id); window.location.href = "/index.html"; }
+      });
     });
 
     const bm = storyEl.querySelector(".bookmark-btn");

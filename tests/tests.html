@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Midium — Test Runner</title>
+  <script>
+    /* Force PREVIEW/local mode: no Supabase, no network. The store + paywall
+       then run entirely against localStorage, which the suite snapshots and
+       restores so your real data is never touched. */
+    window.APP_CONFIG = {
+      SUPABASE_URL: "https://YOUR-PROJECT-REF.supabase.co",
+      SUPABASE_ANON_KEY: "YOUR-ANON-PUBLIC-KEY",
+      HOME_PATH: "/index.html", LOGIN_PATH: "/pages/login.html"
+    };
+    window.isSupabaseConfigured = function () { return false; };
+  </script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 20px; color: #14130f; }
+    h1 { font-family: Georgia, serif; }
+    #summary { font-size: 1.1rem; padding: 12px 16px; border-radius: 10px; background: #f1efe8; margin: 16px 0; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 4px 0; font-size: .92rem; font-family: ui-monospace, monospace; }
+  </style>
+</head>
+<body>
+  <h1>📖 Midium — automated tests</h1>
+  <p>Unit + integration tests for the data/logic layer (runs offline in preview mode).
+     For auth / DB / UI flows, see <code>tests/TEST-PLAN.md</code>.</p>
+  <div id="summary">Running…</div>
+  <ul id="results"></ul>
+
+  <script src="/scripts/data/articles.js"></script>
+  <script src="/scripts/feed/paywall.js"></script>
+  <script src="/scripts/data/social.js"></script>
+  <script src="/tests/tests.js"></script>
+</body>
+</html>

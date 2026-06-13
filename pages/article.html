@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" />
   <title>Reading · Midium</title>
 
   <script>
@@ -46,6 +47,7 @@
   <script src="/scripts/core/supabase-client.js"></script>
   <script src="/scripts/core/session.js"></script>
   <script src="/scripts/core/theme.js"></script>
+  <script src="/scripts/core/ui.js"></script>
   <script src="/scripts/data/articles.js"></script>
   <script src="/scripts/data/social.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>

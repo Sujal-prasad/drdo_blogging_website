@@ -1,0 +1,14 @@
+{
+  "name": "midium",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Midium — a Medium-style reading & writing platform (static site + Supabase).",
+  "scripts": {
+    "serve": "node tests/static-server.js",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}

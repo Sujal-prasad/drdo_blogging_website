@@ -367,12 +367,17 @@ The ultimate result of this rigorous subtraction, when it truly works, looks inc
     return a;
   }
 
+  // sanitize user-controlled fields that end up in HTML/inline-styles (anti-XSS)
+  function safeAccent(c) { return (typeof c === "string" && /^#[0-9a-fA-F]{3,8}$/.test(c)) ? c : "#1a8917"; }
+  function safeCover(c)  { return (typeof c === "string" && /^(data:image\/|https?:\/\/)/.test(c)) ? c : null; }
+  function safeEmoji(e)  { return (typeof e === "string" ? e.replace(/[<>&"']/g, "").slice(0, 12) : "") || "📝"; }
+
   function rowToArticle(r) {
     return {
       id: r.id, title: r.title, dek: r.dek || "", tag: r.tag || "General",
       author: r.author_name || "Anonymous", authorId: r.author_id || null,
-      accent: r.accent || "#1a8917", emoji: r.emoji || "📝",
-      cover: r.cover || null, body: r.body || "",
+      accent: safeAccent(r.accent), emoji: safeEmoji(r.emoji),
+      cover: safeCover(r.cover), body: r.body || "",
       date: r.created_at, claps: 0,
       userPost: !!myUserId && r.author_id === myUserId,
       readingTime: readingTime(r.body)
@@ -402,10 +407,12 @@ The ultimate result of this rigorous subtraction, when it truly works, looks inc
 
   async function addArticle({ title, dek, tag, body, author, accent, emoji, cover }) {
     const clean = {
-      title: (title || "Untitled").trim(), dek: (dek || "").trim(),
-      tag: (tag || "General").trim(), author: (author || "You").trim(),
-      accent: accent || "#1a8917", emoji: emoji || "📝", cover: cover || null,
-      body: (body || "").trim()
+      title: (title || "Untitled").trim().slice(0, 200),
+      dek: (dek || "").trim().slice(0, 300),
+      tag: (tag || "General").trim().slice(0, 40),
+      author: (author || "You").trim().slice(0, 80),
+      accent: safeAccent(accent), emoji: safeEmoji(emoji), cover: safeCover(cover),
+      body: (body || "").trim().slice(0, 4000000) // cap (~4MB) to prevent abuse
     };
     if (live && window.sb) {
       const { data: { user } } = await window.sb.auth.getUser();
@@ -428,9 +435,11 @@ The ultimate result of this rigorous subtraction, when it truly works, looks inc
 
   async function updateArticle(id, { title, dek, tag, body, accent, emoji, cover }) {
     const patch = {
-      title: (title || "Untitled").trim(), dek: (dek || "").trim(),
-      tag: (tag || "General").trim(), accent: accent || "#1a8917",
-      emoji: emoji || "📝", cover: cover || null, body: (body || "").trim()
+      title: (title || "Untitled").trim().slice(0, 200),
+      dek: (dek || "").trim().slice(0, 300),
+      tag: (tag || "General").trim().slice(0, 40),
+      accent: safeAccent(accent), emoji: safeEmoji(emoji), cover: safeCover(cover),
+      body: (body || "").trim().slice(0, 4000000)
     };
     if (live && window.sb) {
       const { data, error } = await window.sb.from("articles").update(patch).eq("id", id).select().single();

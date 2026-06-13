@@ -22,6 +22,9 @@ window.Social = (function () {
   }
   async function addComment(articleId, body, authorName) {
     if (!live || !sb()) throw new Error("Sign in to respond.");
+    body = (body || "").trim().slice(0, 5000);             // length cap
+    authorName = (authorName || "Anonymous").slice(0, 80);
+    if (!body) throw new Error("Write something first.");
     const me = await uid();
     const { data, error } = await sb().from("comments")
       .insert({ article_id: articleId, user_id: me, author_name: authorName, body }).select().single();
@@ -55,6 +58,13 @@ window.Social = (function () {
       .select("*", { count: "exact", head: true }).eq("author_id", authorId);
     return count || 0;
   }
+  // author ids the current user follows (for the "Following" feed tab)
+  async function getFollowingIds() {
+    if (!live || !sb()) return [];
+    const me = await uid(); if (!me) return [];
+    const { data, error } = await sb().from("follows").select("author_id").eq("follower_id", me);
+    return error ? [] : (data || []).map((r) => r.author_id);
+  }
 
-  return { uid, getComments, addComment, deleteComment, isFollowing, follow, unfollow, followerCount };
+  return { uid, getComments, addComment, deleteComment, isFollowing, follow, unfollow, followerCount, getFollowingIds };
 })();

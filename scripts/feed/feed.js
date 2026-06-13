@@ -29,6 +29,7 @@
     new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
   let state = { q: "", tag: "All", sort: "new" };
+  let followingIds = new Set();
 
   function cardHTML(a) {
     const claps = MidiumArticles.clapsFor(a);
@@ -61,6 +62,7 @@
     const q = state.q.trim().toLowerCase();
     const list = MidiumArticles.getAll().filter((a) => {
       if (state.tag === "Saved") { if (!MidiumArticles.isBookmarked(a.id)) return false; }
+      else if (state.tag === "Following") { if (!a.authorId || !followingIds.has(a.authorId)) return false; }
       else if (state.tag !== "All" && a.tag !== state.tag) return false;
       const text = (a.title + " " + a.dek + " " + a.author + " " + a.tag).toLowerCase();
       return !q || text.includes(q);
@@ -76,13 +78,16 @@
       ? list.map(cardHTML).join("")
       : (state.tag === "Saved"
           ? `<p class="empty">No saved stories yet. Tap 🔖 on any article to add it to your reading list.</p>`
+          : state.tag === "Following"
+          ? `<p class="empty">You're not following anyone yet. Open an author's profile and tap <strong>Follow</strong>.</p>`
           : `<p class="empty">No stories match your search.<br>Try different keywords or <a href="/pages/write.html">write one yourself</a>.</p>`);
   }
 
   function renderChips() {
-    const tags = ["All", "Saved", ...MidiumArticles.allTags()];
+    const tags = ["All", "Following", "Saved", ...MidiumArticles.allTags()];
+    const label = (t) => t === "Saved" ? "🔖 Saved" : t === "Following" ? "👥 Following" : esc(t);
     $("#chips").innerHTML = tags
-      .map((t) => `<button class="chip ${t === state.tag ? "active" : ""}" data-tag="${esc(t)}">${t === "Saved" ? "🔖 Saved" : esc(t)}</button>`)
+      .map((t) => `<button class="chip ${t === state.tag ? "active" : ""}" data-tag="${esc(t)}">${label(t)}</button>`)
       .join("");
   }
 
@@ -138,6 +143,7 @@
 
     renderSkeletons();                  // show placeholders while the DB loads
     await MidiumArticles.load(); // hydrate posts from Supabase
+    try { if (window.Social) followingIds = new Set(await Social.getFollowingIds()); } catch (_) {}
 
     const name = Session.displayName(s.user);
     const isNew = Session.isNewUser(s.user);

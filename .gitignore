@@ -1,0 +1,17 @@
+# Dependencies / build
+node_modules/
+dist/
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# Secrets — never commit these. (The anon key in scripts/config.js is public by design.)
+.env
+.env.*
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log

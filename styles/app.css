@@ -149,8 +149,8 @@
 .card-meta { display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--ink-soft); margin-top: 4px; }
 .card-meta .dotsep { opacity: .5; }
 .card-meta .claps { margin-left: auto; }
-.card-author { cursor: pointer; font-weight: 600; }
-.card-author:hover { color: var(--ink); text-decoration: underline; }
+.card-author { cursor: pointer; font-weight: 600; color: var(--accent-2); }
+.card-author:hover { text-decoration: underline; }
 
 .empty { text-align: center; color: var(--ink-soft); padding: 60px 0; }
 
@@ -466,7 +466,8 @@ body.pay-locked { overflow: hidden; }
 .seg-theme button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 /* ---------- Reader: author link, bookmark, edit ---------- */
-.author-link { text-decoration: none; color: inherit; }
+.author-link { text-decoration: none; }
+.author-link strong { color: var(--accent-2); }
 .author-link:hover strong { text-decoration: underline; }
 .bookmark-btn {
   display: inline-flex; align-items: center; gap: 6px;

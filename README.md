@@ -229,6 +229,61 @@ The site is fully static, so Vercel deploys it with **no build step**:
 
 ---
 
+## 🔒 Security
+
+- **XSS:** all user-supplied text (titles, deks, authors, comments, bodies) is
+  HTML-escaped before rendering. The article `emoji`, `accent`, and `cover` are
+  **sanitized at the data boundary** (`rowToArticle`) — accent must be a hex colour, cover
+  must be a `data:image/` or `https://` URL, emoji is stripped of markup — so a malicious
+  row can't inject. In-body images only render for `data:image/` / `http(s)` schemes.
+- **Content-Security-Policy:** every page ships a CSP meta tag — scripts only from self +
+  jsDelivr, connections only to Supabase, `object-src 'none'`, `base-uri 'self'`,
+  `frame-ancestors 'none'` (blocks clickjacking + limits exfiltration even if something slips through).
+- **SQL injection:** not applicable — the app never builds raw SQL. All data access goes
+  through the Supabase JS client (PostgREST), which **parameterizes every query**. Access is
+  further constrained by **Row-Level Security** (users can only insert/update/delete their own rows).
+- **CSRF:** not applicable — sessions are **JWT bearer tokens in the `Authorization` header**
+  (localStorage), not cookies, so a cross-site request can't ride along with credentials.
+  OAuth uses Supabase's `state`/PKCE handling.
+- **Abuse limits:** article/comment fields are length-capped (title/dek/tag/author, body ≤ ~4 MB).
+- **Keys:** only the public **anon** key is in the frontend; the `service_role` key is never used client-side.
+
+### OWASP Top 10 (2021) coverage
+| # | Risk | How it's handled |
+|---|---|---|
+| A01 | Broken Access Control | **Row-Level Security** on every table; insert/update/delete restricted to the owning user (`with check`). The client auth-gate is UX only — the real boundary is RLS. |
+| A02 | Cryptographic Failures | HTTPS everywhere (Supabase + Vercel); passwords hashed by Supabase; no custom crypto; only the public anon key client-side. |
+| A03 | Injection | No raw SQL (PostgREST parameterizes); output escaping + field sanitization + CSP for XSS. |
+| A04 | Insecure Design | Auth + access enforced server-side via RLS. *Known by design:* the **paywall is simulated/client-side** — a real one must gate `body` server-side. |
+| A05 | Security Misconfiguration | RLS enabled on all tables; CSP; least-privilege anon key; no debug endpoints. |
+| A06 | Vulnerable Components | Few deps, pinned CDN versions; supabase-js on `@2` for patches. |
+| A07 | Auth Failures | Supabase Auth (hashing, OAuth, email confirm, rate-limits). **Enable in the dashboard:** Leaked-Password Protection, email confirmation, and (optionally) CAPTCHA. |
+| A08 | Data Integrity Failures | Static assets from trusted CDNs; consider adding **SRI** hashes + pinning exact versions. |
+| A09 | Logging/Monitoring | Use Supabase's Auth logs / dashboard. |
+| A10 | SSRF | N/A — no server-side fetches from user input. |
+
+**Recommended Supabase dashboard settings** (Authentication → … ): turn on **Confirm email**,
+**Leaked Password Protection**, a sensible **minimum password length**, and **rate limiting /
+CAPTCHA** for sign-ups. These are config toggles, not code.
+
+## 🧪 Testing
+- **Automated (logic/data):** open **`/tests/tests.html`** in Live Server — unit + integration
+  tests for the article store and paywall, run **offline** (preview mode), with `localStorage`
+  snapshot/restore so real data is safe. Covers reading-time, paywall gating, input
+  sanitization (XSS-safe), clap-once, bookmarks, and CRUD.
+- **E2E (Playwright):** scaffolded — runs against a tiny built-in static server (no extra deps).
+  ```bash
+  npm install            # gets @playwright/test
+  npx playwright install # browser binaries (first time)
+  npm run test:e2e       # runs tests/e2e/*.spec.js
+  ```
+  Specs that pass **with no credentials**: login render, theme toggle, **logged-out redirect**
+  to login, and the logic suite (run inside a real browser). Authenticated flows (publish,
+  clap, paywall) are in `tests/e2e/authed.example.spec.js` as a template — enable them with a
+  **dedicated test Supabase project** + test account (never prod).
+- **Manual E2E:** **`tests/TEST-PLAN.md`** — full click-through checklist for everything that
+  needs the live app + Supabase.
+
 ## 🛠️ Tech & libraries (all via CDN — no build step)
 - **Supabase JS v2** — auth & (later) database.
 - **GSAP** — entrance, mascot, and success animations.
