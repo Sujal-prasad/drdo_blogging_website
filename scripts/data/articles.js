@@ -465,6 +465,18 @@ The ultimate result of this rigorous subtraction, when it truly works, looks inc
   }
 
   function getByAuthor(authorId) { return getAll().filter((a) => a.authorId && a.authorId === authorId); }
+  function getByAuthorName(name) { return getAll().filter((a) => a.author === name); }
+
+  /* ---- follows (client-side, keyed by author name) ---- */
+  const FOLLOWS_KEY = "midium-follows";
+  function getFollowedAuthors() { try { return JSON.parse(localStorage.getItem(FOLLOWS_KEY)) || []; } catch (_) { return []; } }
+  function isFollowingAuthor(name) { return getFollowedAuthors().includes(name); }
+  function toggleFollowAuthor(name) {
+    const f = getFollowedAuthors(); const i = f.indexOf(name);
+    if (i >= 0) f.splice(i, 1); else f.unshift(name);
+    localStorage.setItem(FOLLOWS_KEY, JSON.stringify(f));
+    return i < 0; // true if now following
+  }
 
   /* ---- bookmarks (reading list — client-side) ---- */
   const BOOKMARKS_KEY = "midium-bookmarks";
@@ -503,7 +515,8 @@ The ultimate result of this rigorous subtraction, when it truly works, looks inc
 
   return {
     SEED, load, getAll, getById, addArticle, updateArticle, deleteArticle,
-    getByAuthor, getBookmarks, isBookmarked, toggleBookmark,
+    getByAuthor, getByAuthorName, getFollowedAuthors, isFollowingAuthor, toggleFollowAuthor,
+    getBookmarks, isBookmarked, toggleBookmark,
     clap, clapsFor, hasClapped, allTags, readingTime
   };
 })();

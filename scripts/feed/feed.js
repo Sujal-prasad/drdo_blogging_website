@@ -29,7 +29,8 @@
     new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
   let state = { q: "", tag: "All", sort: "new" };
-  let followingIds = new Set();
+  let followedAuthors = new Set(); // house authors (local, by name)
+  let followingIds = new Set();    // real users (DB, by author id)
 
   function cardHTML(a) {
     const claps = MidiumArticles.clapsFor(a);
@@ -46,8 +47,8 @@
           <p class="card-dek">${esc(a.dek)}</p>
           <div class="card-meta">
             ${a.authorId
-              ? `<span class="card-author" data-author="${esc(a.authorId)}">${esc(a.author)}</span>`
-              : `<span>${esc(a.author)}</span>`}
+              ? `<span class="card-author" data-id="${esc(a.authorId)}">${esc(a.author)}</span>`
+              : `<span class="card-author" data-name="${esc(a.author)}">${esc(a.author)}</span>`}
             <span class="dotsep">·</span>
             <span>${a.readingTime || MidiumArticles.readingTime(a.body)} min read</span>
             <span class="dotsep">·</span>
@@ -62,7 +63,10 @@
     const q = state.q.trim().toLowerCase();
     const list = MidiumArticles.getAll().filter((a) => {
       if (state.tag === "Saved") { if (!MidiumArticles.isBookmarked(a.id)) return false; }
-      else if (state.tag === "Following") { if (!a.authorId || !followingIds.has(a.authorId)) return false; }
+      else if (state.tag === "Following") {
+        const followed = a.authorId ? followingIds.has(a.authorId) : followedAuthors.has(a.author);
+        if (!followed) return false;
+      }
       else if (state.tag !== "All" && a.tag !== state.tag) return false;
       const text = (a.title + " " + a.dek + " " + a.author + " " + a.tag).toLowerCase();
       return !q || text.includes(q);
@@ -143,6 +147,7 @@
 
     renderSkeletons();                  // show placeholders while the DB loads
     await MidiumArticles.load(); // hydrate posts from Supabase
+    followedAuthors = new Set(MidiumArticles.getFollowedAuthors());
     try { if (window.Social) followingIds = new Set(await Social.getFollowingIds()); } catch (_) {}
 
     const name = Session.displayName(s.user);
@@ -212,7 +217,9 @@
       const au = e.target.closest(".card-author");
       if (au) {
         e.preventDefault(); e.stopPropagation();
-        location.href = "/pages/author.html?id=" + encodeURIComponent(au.dataset.author);
+        location.href = au.dataset.id
+          ? "/pages/author.html?id=" + encodeURIComponent(au.dataset.id)
+          : "/pages/author.html?name=" + encodeURIComponent(au.dataset.name);
       }
     });
   }

@@ -86,9 +86,7 @@
         <div class="article-byline">
           <span class="avatar" style="background:${plainGradient(a.accent)}">${initial}</span>
           <div>
-            <div>${a.authorId
-              ? `<a class="author-link" href="/pages/author.html?id=${encodeURIComponent(a.authorId)}"><strong>${esc(a.author)}</strong></a>`
-              : `<strong>${esc(a.author)}</strong>`}${a.userPost ? " · your post" : ""}</div>
+            <div><a class="author-link" href="/pages/author.html?${a.authorId ? "id=" + encodeURIComponent(a.authorId) : "name=" + encodeURIComponent(a.author)}"><strong>${esc(a.author)}</strong></a>${a.userPost ? " · your post" : ""}</div>
             <div>${fmtDate(a.date)} · ${mins} min read</div>
           </div>
         </div>

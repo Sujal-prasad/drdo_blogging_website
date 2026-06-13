@@ -1,5 +1,7 @@
 /* =========================================================
-   AUTHOR PAGE — an author's articles + follow button
+   AUTHOR PAGE — an author's posts + Follow.
+   - ?id=<uuid>  → a real user: follow via Supabase (shared, real counts)
+   - ?name=<str> → a house/sample author: local follow (by name)
    ========================================================= */
 
 (function () {
@@ -41,26 +43,46 @@
   async function init() {
     const s = await Session.requireAuth();
     if (!s) return;
-    const authorId = new URLSearchParams(location.search).get("id");
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");     // real user (Supabase)
+    const name = params.get("name"); // house author (local)
 
     await MidiumArticles.load();
-    const posts = authorId ? MidiumArticles.getByAuthor(authorId) : [];
-    const name = posts.length ? posts[0].author : "Unknown author";
-    const initial = esc((name.trim().charAt(0) || "?").toUpperCase());
-    const accent = posts.length ? posts[0].accent : "#1a8917";
 
-    const me = await Social.uid();
-    const isSelf = me && authorId === me;
-    let following = await Social.isFollowing(authorId);
-    const followers = await Social.followerCount(authorId);
+    let posts, authorName, isSelf, following, followers = null, toggle;
+
+    if (id) {
+      posts = MidiumArticles.getByAuthor(id);
+      authorName = posts.length ? posts[0].author : "Author";
+      const me = await Social.uid();
+      isSelf = !!me && id === me;
+      following = await Social.isFollowing(id);
+      followers = await Social.followerCount(id);
+      toggle = async () => {
+        if (following) await Social.unfollow(id); else await Social.follow(id);
+        following = !following;
+        followers = await Social.followerCount(id);
+        return following;
+      };
+    } else {
+      posts = name ? MidiumArticles.getByAuthorName(name) : [];
+      authorName = name || "Unknown author";
+      isSelf = !!name && name === Session.displayName(s.user);
+      following = MidiumArticles.isFollowingAuthor(name);
+      toggle = async () => { following = MidiumArticles.toggleFollowAuthor(name); return following; };
+    }
+
+    const accent = posts.length ? posts[0].accent : "#1a8917";
+    const initial = esc((authorName.trim().charAt(0) || "?").toUpperCase());
+    const hasAuthor = !!(id || name);
+    const meta = followers != null
+      ? `<span id="followCount">${followers}</span> follower${followers === 1 ? "" : "s"} · ${posts.length} post${posts.length === 1 ? "" : "s"}`
+      : `${posts.length} post${posts.length === 1 ? "" : "s"}`;
 
     $("#authorHead").innerHTML = `
       <span class="author-avatar" style="background:linear-gradient(135deg, ${accent}, color-mix(in srgb, ${accent} 50%, #000))">${initial}</span>
-      <div class="author-info">
-        <h1>${esc(name)}</h1>
-        <p><span id="followCount">${followers}</span> follower${followers === 1 ? "" : "s"} · ${posts.length} post${posts.length === 1 ? "" : "s"}</p>
-      </div>
-      ${!authorId ? ""
+      <div class="author-info"><h1>${esc(authorName)}</h1><p>${meta}</p></div>
+      ${!hasAuthor ? ""
         : isSelf ? `<span class="author-self">✓ This is you</span>`
         : `<button class="btn ${following ? "btn--ghost" : "btn--accent"}" id="followBtn">${following ? "Following ✓" : "Follow"}</button>`}`;
 
@@ -68,20 +90,19 @@
     if (followBtn) followBtn.addEventListener("click", async () => {
       followBtn.disabled = true;
       try {
-        if (following) { await Social.unfollow(authorId); following = false; }
-        else { await Social.follow(authorId); following = true; }
-        followBtn.textContent = following ? "Following ✓" : "Follow";
-        followBtn.classList.toggle("btn--accent", !following);
-        followBtn.classList.toggle("btn--ghost", following);
-        $("#followCount").textContent = await Social.followerCount(authorId);
-        toast(following ? "You're now following " + name + "." : "Unfollowed.");
-      } catch (e) { toast("Couldn't update follow."); }
+        const now = await toggle();
+        followBtn.textContent = now ? "Following ✓" : "Follow";
+        followBtn.classList.toggle("btn--accent", !now);
+        followBtn.classList.toggle("btn--ghost", now);
+        const fc = $("#followCount"); if (fc && followers != null) fc.textContent = followers;
+        toast(now ? "You're now following " + authorName + "." : "Unfollowed " + authorName + ".");
+      } catch (e) { toast("Couldn't update follow — is the follows table set up?"); }
       followBtn.disabled = false;
     });
 
     $("#cards").innerHTML = posts.length
       ? posts.map(cardHTML).join("")
-      : `<p class="empty">This author hasn't published anything yet.</p>`;
+      : `<p class="empty">No posts found for this author.</p>`;
   }
 
   init();
