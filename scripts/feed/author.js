@@ -60,7 +60,9 @@
         <h1>${esc(name)}</h1>
         <p><span id="followCount">${followers}</span> follower${followers === 1 ? "" : "s"} · ${posts.length} post${posts.length === 1 ? "" : "s"}</p>
       </div>
-      ${(isSelf || !authorId) ? "" : `<button class="btn ${following ? "btn--ghost" : "btn--accent"}" id="followBtn">${following ? "Following ✓" : "Follow"}</button>`}`;
+      ${!authorId ? ""
+        : isSelf ? `<span class="author-self">✓ This is you</span>`
+        : `<button class="btn ${following ? "btn--ghost" : "btn--accent"}" id="followBtn">${following ? "Following ✓" : "Follow"}</button>`}`;
 
     const followBtn = $("#followBtn");
     if (followBtn) followBtn.addEventListener("click", async () => {
