@@ -18,14 +18,21 @@
     btn.setAttribute("title", dark ? "Light mode" : "Dark mode");
   }
 
-  function apply(theme) {
-    document.documentElement.setAttribute("data-theme", theme);
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function apply(theme, e) {
+    const root = document.documentElement;
+    const commit = () => { root.setAttribute("data-theme", theme); syncLabel(); };
     localStorage.setItem(STORAGE_KEY, theme);
-    syncLabel();
+    // circular "wipe" from the toggle, where supported; instant otherwise
+    if (reduce || typeof document.startViewTransition !== "function") { commit(); return; }
+    root.style.setProperty("--vt-x", ((e && e.clientX) || window.innerWidth - 40) + "px");
+    root.style.setProperty("--vt-y", ((e && e.clientY) || 24) + "px");
+    document.startViewTransition(commit);
   }
 
   syncLabel(); // just reflect the inline-script's choice; don't persist
 
   const btn = document.getElementById("themeToggle");
-  if (btn) btn.addEventListener("click", () => apply(current() === "dark" ? "light" : "dark"));
+  if (btn) btn.addEventListener("click", (e) => apply(current() === "dark" ? "light" : "dark", e));
 })();

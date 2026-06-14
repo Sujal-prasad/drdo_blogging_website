@@ -236,6 +236,11 @@
 .article-byline strong { color: var(--ink); }
 .article-body { font-size: 1.18rem; line-height: 1.8; margin: 28px 0; }
 .article-body p { margin-bottom: 1.3em; }
+/* editorial drop cap on each story's opening paragraph */
+.article-body > p:first-of-type::first-letter {
+  float: left; font-family: var(--serif); font-weight: 600;
+  font-size: 3.1em; line-height: .82; padding: .02em .12em 0 0; color: var(--ink);
+}
 .article-img { width: 100%; border-radius: var(--radius); margin: 10px 0 22px; display: block; }
 .article-foot { display: flex; align-items: center; gap: 14px; padding-top: 24px; border-top: 1px solid var(--line); }
 .clap-btn {
@@ -592,8 +597,105 @@ body.pay-locked { overflow: hidden; }
 /* not enough gutter room for the floating TOC -> hide it */
 @media (max-width: 1199px) { .toc { display: none !important; } }
 
+/* ---------- Responsive / mobile ---------- */
+@media (max-width: 760px) {
+  /* topbar can hold a lot of actions — let them wrap instead of overflowing */
+  .app-topbar { padding: 10px 16px; gap: 10px; flex-wrap: wrap; }
+  .topbar-actions { gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-left: auto; }
+  .btn { padding: 8px 12px; font-size: .86rem; }
+  .feed-hero { padding: 28px 0 14px; }
+}
 @media (max-width: 600px) {
-  .app-topbar { padding: 12px 16px; }
-  .btn { padding: 8px 13px; }
+  .app-topbar { padding: 10px 14px; }
+  .btn { padding: 7px 11px; font-size: .82rem; gap: 6px; }
+  .cards { grid-template-columns: 1fr; gap: 16px; }       /* single column on phones */
   .related-grid { grid-template-columns: 1fr; }
+  .feed-controls { gap: 10px; }
+  .search { min-width: 0; }                                /* let it shrink, don't overflow */
+  .feed-sort { width: 100%; }                              /* sort drops to its own row */
+  .article-cover { height: 170px; font-size: 3.4rem; margin: 16px 0 22px; }
+  .article-dek { font-size: 1.1rem; }
+  .article-body { font-size: 1.08rem; line-height: 1.75; }
+  .article-foot { flex-wrap: wrap; gap: 10px; }
+  .pay-card { padding: 24px 18px 20px; }
+  .pay-head h2 { font-size: 1.3rem; }
+  .share-sheet { padding: 22px 18px; }
+}
+@media (max-width: 380px) {
+  .share-grid { grid-template-columns: 1fr; }              /* one share option per row */
+  .btn { padding: 7px 10px; font-size: .8rem; }
+}
+
+/* =========================================================
+   MOTION & MICRO-INTERACTIONS
+   All hiding/animation is gated behind html.fx, which effects.js
+   only adds when the user has NOT requested reduced motion. So if JS
+   is off or motion is reduced, everything is simply visible & static.
+   ========================================================= */
+
+/* gentle page fade once the auth-gate reveals the content */
+html.fx:not(.auth-gate) body { animation: page-fade .5s ease both; }
+@keyframes page-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* scroll reveal (cards stagger in) */
+html.fx .reveal { opacity: 0; transform: translateY(14px); transition: opacity .55s ease, transform .55s ease; }
+html.fx .reveal.in { opacity: 1; transform: none; }
+
+/* card: cover zoom + cursor spotlight */
+html.fx .card-cover { transition: transform .5s cubic-bezier(.2,.7,.2,1); }
+html.fx .card:hover .card-cover { transform: scale(1.06); }
+html.fx .card::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.16), transparent 60%);
+  opacity: 0; transition: opacity .35s ease;
+}
+html.fx .card:hover::after { opacity: 1; }
+:root[data-theme="dark"].fx .card::after {
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.09), transparent 60%);
+}
+
+/* button / chip / tab ripple */
+html.fx .btn, html.fx .chip, html.fx .pay-tab { position: relative; overflow: hidden; }
+.fx-ripple {
+  position: absolute; border-radius: 50%; transform: scale(0);
+  background: currentColor; opacity: .28; pointer-events: none;
+  animation: fx-ripple .6s ease-out forwards;
+}
+@keyframes fx-ripple { to { transform: scale(2.4); opacity: 0; } }
+
+/* clap burst + floating "+1" */
+.fx-plusone {
+  position: fixed; z-index: 9999; pointer-events: none; transform: translate(-50%, -50%);
+  font-weight: 800; font-size: 1.05rem; color: var(--accent); animation: fx-plus .8s ease-out forwards;
+}
+@keyframes fx-plus {
+  0% { opacity: 0; transform: translate(-50%, -40%) scale(.6); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -185%) scale(1); }
+}
+.fx-particle {
+  position: fixed; z-index: 9999; width: 7px; height: 7px; border-radius: 50%;
+  pointer-events: none; background: var(--accent); animation: fx-particle .7s ease-out forwards;
+}
+@keyframes fx-particle {
+  0% { opacity: 1; transform: translate(-50%, -50%); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.3); }
+}
+
+/* generic pop (bookmark) */
+.fx-pop { animation: fx-pop .42s cubic-bezier(.2,.9,.3,1.4); }
+@keyframes fx-pop { 0% { transform: scale(1); } 40% { transform: scale(1.32); } 100% { transform: scale(1); } }
+
+/* theme-toggle circular wipe (View Transitions API) */
+@supports (view-transition-name: root) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+  ::view-transition-new(root) { animation: vt-reveal .5s cubic-bezier(.4,0,.2,1) both; }
+  @keyframes vt-reveal {
+    from { clip-path: circle(0% at var(--vt-x, 95%) var(--vt-y, 5%)); }
+    to   { clip-path: circle(150% at var(--vt-x, 95%) var(--vt-y, 5%)); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-ripple, .fx-plusone, .fx-particle, .fx-pop { animation: none !important; }
 }

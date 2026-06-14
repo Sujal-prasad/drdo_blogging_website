@@ -2,6 +2,9 @@
    BASE  —  design tokens + resets shared across all pages
    ========================================================= */
 
+/* Editorial display serif for headlines/titles (a bit of human character) */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap');
+
 :root {
   /* Brand palette (editorial / Medium-inspired) */
   --ink:        #14130f;   /* near-black text            */
@@ -26,7 +29,7 @@
   --shadow-lg:  0 24px 70px rgba(20, 19, 15, 0.18);
 
   /* Type */
-  --serif: "Georgia", "Times New Roman", serif;
+  --serif: "Fraunces", "Georgia", "Times New Roman", serif;
   --sans:  "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 

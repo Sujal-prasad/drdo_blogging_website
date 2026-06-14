@@ -25,7 +25,7 @@
 
   function cardHTML(a) {
     return `
-      <a class="card" href="/pages/article.html?id=${encodeURIComponent(a.id)}">
+      <a class="card reveal" href="/pages/article.html?id=${encodeURIComponent(a.id)}">
         <div class="card-cover" style="${coverStyle(a)}"><span class="card-emoji">${a.emoji || "📝"}</span></div>
         <div class="card-body">
           <span class="card-tag">${esc(a.tag)}</span>
@@ -76,7 +76,7 @@
     const initial = esc((authorName.trim().charAt(0) || "?").toUpperCase());
     const hasAuthor = !!(id || name);
     const meta = followers != null
-      ? `<span id="followCount">${followers}</span> follower${followers === 1 ? "" : "s"} · ${posts.length} post${posts.length === 1 ? "" : "s"}`
+      ? `<span id="followCount" data-countup="${followers}">${followers}</span> follower${followers === 1 ? "" : "s"} · ${posts.length} post${posts.length === 1 ? "" : "s"}`
       : `${posts.length} post${posts.length === 1 ? "" : "s"}`;
 
     $("#authorHead").innerHTML = `
@@ -103,6 +103,8 @@
     $("#cards").innerHTML = posts.length
       ? posts.map(cardHTML).join("")
       : `<p class="empty">No posts found for this author.</p>`;
+
+    if (window.Effects) Effects.scan(document); // reveal cards + count up the follower total
   }
 
   init();

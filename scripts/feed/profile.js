@@ -92,7 +92,14 @@
     });
   })();
 
-  $("#signout").addEventListener("click", () => Session.signOut());
+  $("#signout").addEventListener("click", () => {
+    UI.confirm({
+      title: "Sign out?", emoji: "👋",
+      body: "You'll need to sign in again to read, write, clap and follow.",
+      confirmText: "Sign out", cancelText: "Stay signed in",
+      onConfirm: () => Session.signOut()
+    });
+  });
 
   /* ---- init ---- */
   async function init() {

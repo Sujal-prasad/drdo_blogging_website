@@ -265,6 +265,7 @@
       clap.querySelector(".clap-count").textContent = n;
       clap.classList.add("clapped");
       clap.classList.remove("bumped"); void clap.offsetWidth; clap.classList.add("bumped");
+      if (window.Effects) Effects.clapBurst(clap);
     });
 
     storyEl.querySelector(".share-btn").addEventListener("click", () => openShareSheet(a));
@@ -285,6 +286,7 @@
       const on = MidiumArticles.toggleBookmark(a.id);
       bm.textContent = on ? "🔖 Saved" : "🔖 Save";
       bm.classList.toggle("saved", on);
+      if (window.Effects) Effects.pop(bm);
       toast(on ? "Saved to your reading list." : "Removed from your reading list.");
     });
 

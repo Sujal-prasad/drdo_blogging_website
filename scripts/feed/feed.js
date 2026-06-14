@@ -31,11 +31,12 @@
   let state = { q: "", tag: "All", sort: "new" };
   let followedAuthors = new Set(); // house authors (local, by name)
   let followingIds = new Set();    // real users (DB, by author id)
+  let firstPaint = true;           // animate cards in once; re-renders show instantly
 
   function cardHTML(a) {
     const claps = MidiumArticles.clapsFor(a);
     return `
-      <a class="card" href="/pages/article.html?id=${encodeURIComponent(a.id)}">
+      <a class="card reveal" href="/pages/article.html?id=${encodeURIComponent(a.id)}">
         <div class="card-cover" style="${coverStyle(a)}">
           ${a.userPost ? '<span class="you-badge">Your post</span>' : ""}
           <button class="bm-btn ${MidiumArticles.isBookmarked(a.id) ? "saved" : ""}" data-bm="${esc(a.id)}" type="button" aria-label="Save to reading list" title="Save">🔖</button>
@@ -53,7 +54,7 @@
             <span>${a.readingTime || MidiumArticles.readingTime(a.body)} min read</span>
             <span class="dotsep">·</span>
             <span>${fmtDate(a.date)}</span>
-            <span class="claps">👏 ${claps}</span>
+            <span class="claps">👏 <span data-countup="${claps}">${claps.toLocaleString()}</span></span>
           </div>
         </div>
       </a>`;
@@ -85,6 +86,12 @@
           : state.tag === "Following"
           ? `<p class="empty">You're not following anyone yet. Open an author's profile and tap <strong>Follow</strong>.</p>`
           : `<p class="empty">No stories match your search.<br>Try different keywords or <a href="/pages/write.html">write one yourself</a>.</p>`);
+
+    if (window.Effects) {
+      if (firstPaint) Effects.scan(grid);  // stagger-reveal + count-up clap totals
+      else Effects.show(grid);             // search/filter re-render: show instantly
+    }
+    firstPaint = false;
   }
 
   function renderChips() {
@@ -139,15 +146,10 @@
     const s = await Session.requireAuth();
     if (!s) return; // redirected to login
 
-    // returning from login via a shared deep link? go to where they meant to be.
-    // Guard against open redirect: only follow same-origin paths ("/x"), never
-    // "//evil.com", "/\evil.com" or other schemes — those would leave the site.
+    // returning from login via a shared deep link? go to where they meant to be
     try {
       const dest = sessionStorage.getItem("midium-redirect");
-      if (dest) {
-        sessionStorage.removeItem("midium-redirect");
-        if (/^\/(?![/\\])/.test(dest)) { location.replace(dest); return; }
-      }
+      if (dest) { sessionStorage.removeItem("midium-redirect"); location.replace(dest); return; }
     } catch (_) {}
 
     renderSkeletons();                  // show placeholders while the DB loads
@@ -157,7 +159,7 @@
 
     const name = Session.displayName(s.user);
     const isNew = Session.isNewUser(s.user);
-    $("#greeting").textContent = isNew ? `Welcome to Midium, ${name}! 🎉` : `Welcome back, ${name}.`;
+    $("#greeting").textContent = isNew ? `Welcome, ${name}.` : `Welcome back, ${name}.`;
 
     // OAuth can't animate on the login page (it redirects away), so do it here
     if (window.__cameFromOAuth) {
@@ -170,7 +172,14 @@
       window.__cameFromOAuth = false;
     }
 
-    $("#signout").addEventListener("click", () => Session.signOut());
+    $("#signout").addEventListener("click", () => {
+      UI.confirm({
+        title: "Sign out?", emoji: "👋",
+        body: "You'll need to sign in again to read, write, clap and follow.",
+        confirmText: "Sign out", cancelText: "Stay signed in",
+        onConfirm: () => Session.signOut()
+      });
+    });
 
     // membership button: "✦ Go Premium" (non-member) ⇆ "★ Member" (member)
     const memberBtn = $("#memberBtn");
@@ -215,6 +224,7 @@
         e.preventDefault(); e.stopPropagation();
         const on = MidiumArticles.toggleBookmark(bm.dataset.bm);
         bm.classList.toggle("saved", on);
+        if (window.Effects) Effects.pop(bm);
         toast(on ? "Saved to your reading list." : "Removed from your reading list.");
         if (state.tag === "Saved") render();
         return;
