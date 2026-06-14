@@ -699,3 +699,15 @@ html.fx .btn, html.fx .chip, html.fx .pay-tab { position: relative; overflow: hi
 @media (prefers-reduced-motion: reduce) {
   .fx-ripple, .fx-plusone, .fx-particle, .fx-pop { animation: none !important; }
 }
+
+/* =========================================================
+   DESIGNED COVERS — photo-less covers get a faint dot texture so the
+   colour field reads as a deliberate "section card", not a placeholder.
+   (Covers with a real photo carry url() inline, so they're excluded.)
+   ========================================================= */
+.card-cover:not([style*="url"])::before,
+.article-cover:not([style*="url"])::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background-image: radial-gradient(rgba(255,255,255,.12) 1px, transparent 1.5px);
+  background-size: 18px 18px; opacity: .5;
+}

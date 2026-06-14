@@ -22,8 +22,8 @@
   // a real cover photo tinted with the article's accent, or a plain gradient
   const coverStyle = (a) =>
     a.cover
-      ? `background-color:${a.accent}; background-image: linear-gradient(135deg, ${a.accent}cc, ${a.accent}66), url('${a.cover}');`
-      : `background: linear-gradient(135deg, ${a.accent}, color-mix(in srgb, ${a.accent} 50%, #000));`;
+      ? `background-color:${a.accent}; background-image: linear-gradient(180deg, rgba(20,19,15,.06), rgba(20,19,15,.42)), url('${a.cover}');`
+      : `background: linear-gradient(140deg, color-mix(in srgb, ${a.accent} 82%, #14130f), color-mix(in srgb, ${a.accent} 40%, #000));`;
 
   const fmtDate = (d) =>
     new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -40,7 +40,6 @@
         <div class="card-cover" style="${coverStyle(a)}">
           ${a.userPost ? '<span class="you-badge">Your post</span>' : ""}
           <button class="bm-btn ${MidiumArticles.isBookmarked(a.id) ? "saved" : ""}" data-bm="${esc(a.id)}" type="button" aria-label="Save to reading list" title="Save">🔖</button>
-          <span class="card-emoji">${a.emoji || "📝"}</span>
         </div>
         <div class="card-body">
           <span class="card-tag">${esc(a.tag)}</span>

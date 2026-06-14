@@ -13,8 +13,8 @@
 
   const plainGradient = (c) => `linear-gradient(135deg, ${c}, color-mix(in srgb, ${c} 50%, #000))`;
   function coverStyle(a) {
-    if (a.cover) return `background-color:${a.accent}; background-image: linear-gradient(135deg, ${a.accent}cc, ${a.accent}66), url('${a.cover}');`;
-    return `background: ${plainGradient(a.accent)};`;
+    if (a.cover) return `background-color:${a.accent}; background-image: linear-gradient(180deg, rgba(20,19,15,.06), rgba(20,19,15,.42)), url('${a.cover}');`;
+    return `background: linear-gradient(140deg, color-mix(in srgb, ${a.accent} 82%, #14130f), color-mix(in srgb, ${a.accent} 40%, #000));`;
   }
   const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
 
@@ -166,7 +166,7 @@
     const initial = esc((a.author || "?").trim().charAt(0).toUpperCase() || "?");
     return `
       <article class="story" data-id="${esc(a.id)}">
-        <div class="article-cover" style="${coverStyle(a)}"><span class="cover-emoji">${a.emoji || "📝"}</span></div>
+        <div class="article-cover" style="${coverStyle(a)}"></div>
         <span class="article-tag">${esc(a.tag)}</span>
         <h1 class="article-title">${esc(a.title)}</h1>
         ${a.dek ? `<p class="article-dek">${esc(a.dek)}</p>` : ""}
