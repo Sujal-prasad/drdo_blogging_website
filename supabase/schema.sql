@@ -96,6 +96,36 @@ drop policy if exists "users unfollow themselves" on public.follows;
 create policy "users unfollow themselves" on public.follows
   for delete using (auth.uid() = follower_id);
 
+-- ---- DEFENSE-IN-DEPTH: server-side length caps (OWASP A03) ----------------
+-- The browser clamps these too, but a client can be bypassed (curl / Postman /
+-- devtools). These CHECK constraints enforce the same limits in the database,
+-- so even a hand-crafted request can't store oversized / abusive payloads.
+-- Dropped-then-added so this stays safe to re-run.
+alter table public.articles drop constraint if exists articles_len_chk;
+alter table public.articles add constraint articles_len_chk check (
+  char_length(title) between 1 and 200
+  and char_length(coalesce(dek, '')) <= 300
+  and char_length(coalesce(tag, '')) <= 40
+  and char_length(coalesce(author_name, '')) <= 80
+  and char_length(coalesce(emoji, '')) <= 16
+  and char_length(coalesce(accent, '')) <= 9
+  and char_length(coalesce(cover, '')) <= 3000000
+  and char_length(coalesce(body, '')) <= 4000000
+);
+
+alter table public.comments drop constraint if exists comments_len_chk;
+alter table public.comments add constraint comments_len_chk check (
+  char_length(body) between 1 and 5000
+  and char_length(coalesce(author_name, '')) <= 80
+);
+
+alter table public.profiles drop constraint if exists profiles_len_chk;
+alter table public.profiles add constraint profiles_len_chk check (
+  char_length(coalesce(display_name, '')) <= 80
+  and char_length(coalesce(avatar_url, '')) <= 3000000
+);
+
 -- Note: reads-count, bookmarks and membership stay client-side for the
--- simulated paywall. A *real* paywall would gate article bodies server-side
+-- simulated paywall. This is an INTENTIONAL, documented weakness (see
+-- SECURITY.md → A01/A04): a real paywall would gate article bodies server-side
 -- (don't expose `body` via a public SELECT to non-members).

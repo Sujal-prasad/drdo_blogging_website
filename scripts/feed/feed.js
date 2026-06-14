@@ -139,10 +139,15 @@
     const s = await Session.requireAuth();
     if (!s) return; // redirected to login
 
-    // returning from login via a shared deep link? go to where they meant to be
+    // returning from login via a shared deep link? go to where they meant to be.
+    // Guard against open redirect: only follow same-origin paths ("/x"), never
+    // "//evil.com", "/\evil.com" or other schemes — those would leave the site.
     try {
       const dest = sessionStorage.getItem("midium-redirect");
-      if (dest) { sessionStorage.removeItem("midium-redirect"); location.replace(dest); return; }
+      if (dest) {
+        sessionStorage.removeItem("midium-redirect");
+        if (/^\/(?![/\\])/.test(dest)) { location.replace(dest); return; }
+      }
     } catch (_) {}
 
     renderSkeletons();                  // show placeholders while the DB loads

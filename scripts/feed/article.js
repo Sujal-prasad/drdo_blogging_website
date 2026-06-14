@@ -17,14 +17,46 @@
     return `background: ${plainGradient(a.accent)};`;
   }
   const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
-  const paragraphs = (body) =>
-    esc(body).split(/\n{2,}/).map((p) => {
-      const m = p.match(/^!\[[^\]]*\]\((.+)\)$/s); // an image block: ![alt](url)
-      if (m && /^(data:image\/|https?:\/\/)/.test(m[1])) {
-        return `<img class="article-img" src="${m[1]}" alt="" loading="lazy">`;
+
+  // body -> HTML. Supports "## "/"### " headings (one per block) for the
+  // table of contents, "![alt](url)" image blocks, and plain paragraphs.
+  function paragraphs(body, aid) {
+    let h = 0; // heading counter (for unique, stable ids per article)
+    return esc(body).split(/\n{2,}/).map((p) => {
+      const img = p.match(/^!\[[^\]]*\]\((.+)\)$/s); // an image block: ![alt](url)
+      if (img && /^(data:image\/|https?:\/\/)/.test(img[1])) {
+        return `<img class="article-img" src="${img[1]}" alt="" loading="lazy">`;
+      }
+      const head = p.match(/^(#{2,3})\s+(.+)$/); // a single-line "## " / "### " heading
+      if (head) {
+        const lvl = head[1].length; // 2 or 3
+        const id = `${aid}__h${h++}`;
+        return `<h${lvl} class="article-h${lvl}" id="${id}">${head[2].trim()}</h${lvl}>`;
       }
       return `<p>${p.replace(/\n/g, "<br>")}</p>`;
     }).join("");
+  }
+
+  // "More on {tag}" rail shown at the foot of each story
+  function relatedHTML(a) {
+    const rel = (MidiumArticles.getRelated ? MidiumArticles.getRelated(a, 3) : []);
+    if (!rel.length) return "";
+    return `
+      <section class="related">
+        <h3 class="related-title">More on ${esc(a.tag)}</h3>
+        <div class="related-grid">
+          ${rel.map((r) => `
+            <a class="related-card" href="/pages/article.html?id=${encodeURIComponent(r.id)}">
+              <span class="related-emoji" style="background:${plainGradient(r.accent)}">${r.emoji || "📝"}</span>
+              <span class="related-info">
+                <span class="related-rtag">${esc(r.tag)}</span>
+                <span class="related-name">${esc(r.title)}</span>
+                <span class="related-rmeta">${esc(r.author)} · ${r.readingTime || MidiumArticles.readingTime(r.body)} min read</span>
+              </span>
+            </a>`).join("")}
+        </div>
+      </section>`;
+  }
 
   const memberPill = `<span class="meter-pill member">★ Member · unlimited reading</span>`;
   const ownPill = `<span class="meter-pill">Your post · always free</span>`;
@@ -73,6 +105,61 @@
   let currentName = "You";
   const seen = new Set();
 
+  /* ---- reading-progress bar + table of contents (reel-aware) ---- */
+  const HEADER_OFFSET = 90;            // sticky header + a little breathing room
+  let progressBar = null, tocEl = null, tocStoryId = null, tocRaf = 0;
+
+  function updateProgress() {
+    if (!progressBar) return;
+    const doc = document.documentElement;
+    const max = doc.scrollHeight - doc.clientHeight;
+    const pct = max > 0 ? Math.min(100, (doc.scrollTop / max) * 100) : 0;
+    progressBar.style.width = pct.toFixed(2) + "%";
+  }
+
+  // the story currently being read = last one whose top has crossed the header line
+  function activeStory() {
+    const els = stories.querySelectorAll(".story");
+    let chosen = null;
+    els.forEach((el) => { if (el.getBoundingClientRect().top <= HEADER_OFFSET + 40) chosen = el; });
+    return chosen || els[0] || null;
+  }
+
+  function buildToc(storyEl) {
+    if (!tocEl) return;
+    const heads = storyEl ? [...storyEl.querySelectorAll(".article-h2, .article-h3")] : [];
+    if (heads.length < 2) { tocEl.hidden = true; tocEl.innerHTML = ""; tocStoryId = "__none"; return; }
+    tocStoryId = storyEl.dataset.id;
+    tocEl.innerHTML =
+      `<p class="toc-head">On this page</p>
+       <nav class="toc-nav">${heads.map((h) =>
+         `<a class="toc-link ${h.classList.contains("article-h3") ? "sub" : ""}" href="#${h.id}" data-tid="${h.id}">${esc(h.textContent)}</a>`
+       ).join("")}</nav>`;
+    tocEl.hidden = false;
+  }
+
+  function highlightToc(storyEl) {
+    if (!tocEl || tocEl.hidden || !storyEl) return;
+    let current = null;
+    storyEl.querySelectorAll(".article-h2, .article-h3").forEach((h) => {
+      if (h.getBoundingClientRect().top <= HEADER_OFFSET + 12) current = h.id;
+    });
+    tocEl.querySelectorAll(".toc-link").forEach((a) => a.classList.toggle("active", a.dataset.tid === current));
+  }
+
+  function tocTick() {
+    updateProgress();
+    const st = activeStory();
+    if (!st) { if (tocEl) tocEl.hidden = true; return; }
+    if (st.dataset.id !== tocStoryId) buildToc(st);
+    highlightToc(st);
+  }
+
+  function onScroll() {
+    if (tocRaf) return;
+    tocRaf = requestAnimationFrame(() => { tocRaf = 0; tocTick(); });
+  }
+
   function storyHTML(a) {
     const claps = MidiumArticles.clapsFor(a);
     const mins = a.readingTime || MidiumArticles.readingTime(a.body);
@@ -91,13 +178,14 @@
           </div>
         </div>
         <div class="read-meter"></div>
-        <div class="article-body">${paragraphs(a.body)}</div>
+        <div class="article-body">${paragraphs(a.body, a.id)}</div>
         <div class="article-foot">
           <button class="clap-btn">👏 <span class="clap-count">${claps}</span></button>
           <button class="share-btn">↗ Share</button>
           <button class="bookmark-btn">${MidiumArticles.isBookmarked(a.id) ? "🔖 Saved" : "🔖 Save"}</button>
           ${a.userPost ? `<a class="edit-link" href="/pages/write.html?edit=${encodeURIComponent(a.id)}">Edit</a><button class="danger-link">Delete</button>` : ""}
         </div>
+        ${relatedHTML(a)}
         <div class="comments" data-cid="${esc(a.id)}"></div>
       </article>`;
   }
@@ -129,12 +217,13 @@
       const body = el.querySelector(".article-body");
       if (body && body.classList.contains("teaser")) {
         body.classList.remove("teaser");
-        body.innerHTML = paragraphs(a.body);
+        body.innerHTML = paragraphs(a.body, a.id);
       }
       refreshMeter(el, a);
     });
     paused = false;
     loadNext();
+    tocTick();
   }
 
   // a story scrolled into view -> now it counts (record read or show paywall)
@@ -204,6 +293,7 @@
 
     refreshMeter(storyEl, a);
     viewObserver.observe(storyEl); // gate when it scrolls into view
+    tocTick(); // refresh progress + TOC now there's new content
   }
 
   function commentHTML(c, me) {
@@ -278,6 +368,20 @@
     const s = await Session.requireAuth();
     if (!s) return;
     currentName = Session.displayName(s.user);
+
+    // reading-progress bar + table of contents
+    progressBar = $("#readProgress > span");
+    tocEl = $("#toc");
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    if (tocEl) tocEl.addEventListener("click", (e) => {
+      const link = e.target.closest(".toc-link");
+      if (!link) return;
+      e.preventDefault();
+      const h = document.getElementById(link.dataset.tid);
+      if (h) window.scrollTo({ top: h.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET, behavior: "smooth" });
+    });
+
     await MidiumArticles.load(); // hydrate posts from Supabase
     all = MidiumArticles.getAll();
     const id = new URLSearchParams(location.search).get("id");
@@ -286,6 +390,7 @@
 
     cursor = start;
     loadNext(); // the clicked article
+    tocTick();
 
     const io = new IntersectionObserver((entries) => {
       if (entries.some((e) => e.isIntersecting)) loadNext();

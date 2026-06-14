@@ -20,9 +20,15 @@ window.MidiumArticles = (function () {
       body:
 `We are surrounded by the intoxicating allure of beginnings. The modern world is engineered to celebrate the start: we announce our new diets, launch new startups with fanfare, and buy blank notebooks that feel thick with infinite possibility. Beginning is frictionless. It is fueled by the potent, cheap dopamine of novelty and unchecked optimism. When a project exists only in your imagination, it is entirely flawless. It has no bugs, no critical feedback, and no logistical nightmares. Finishing, by contrast, is an inherently brutal collision with reality. It is quiet, deeply unglamorous, and increasingly rare in a culture that incentivizes the pivot over the perseverance.
 
+## Why finishing feels so hard
+
 There is a profound psychological reason for this friction. To move a project from 90% to 100% requires you to mourn the death of its idealized version. You must confront the agonizing gap between the soaring ambition of your initial vision and the messy, compromised, imperfect reality of what you are actually capable of producing. 🪛 In software engineering, this is sardonically called the "90-90 rule": the first 90 percent of the code accounts for the first 90 percent of the development time, while the remaining 10 percent of the code accounts for the *other* 90 percent of the time. This final stretch is a grueling slog of edge cases, structural fixes, and unsexy refinements where motivation absolutely goes to die.
 
+## The hidden cost of open loops
+
 Yet, failing to finish carries a severe, hidden metabolic cost. Psychologists call it the Zeigarnik effect: the brain's tendency to remember uncompleted or interrupted tasks better than completed ones. A dozen half-finished projects do not just sit dormant on a physical shelf; they sit heavily in your subconscious. They are open loops, quietly leaking your cognitive energy. Every time you glance at an abandoned canvas or an unwritten manuscript, you experience a micro-dose of failure. Finishing is, therefore, not just an act of productivity; it is a vital act of mental hygiene. It closes the loop and frees the mind's RAM for the next obsession.
+
+## Redefining what "done" means
 
 The ultimate secret of the master craftsperson is not that they possess superhuman motivation, but that they have cultivated a vastly different relationship with the word "done." Done is not a synonym for perfect. Done simply means it has been shipped. A finished, imperfect thing that actually exists in the real world will teach you exponentially more than a flawless masterpiece that never leaves your hard drive. The world answers back to finished work—with critiques, praise, and data—while your imagination only ever flatters you. So the advice is almost embarrassingly simple: choose fewer beginnings, embrace the excruciating dip of the middle, and grant your work the immense dignity of an ending. 🏁`
     },
@@ -48,9 +54,15 @@ Furthermore, editing is not merely a cosmetic cleanup of grammar; it is where th
       body:
 `Behind his secluded house at Down House in Kent, Charles Darwin maintained a meticulously kept gravel path that he affectionately called his "sandwalk." It was his outdoor laboratory of the mind. He walked it religiously, several times a day, to wrestle with the immensely complex, paradigm-shattering problems of evolutionary biology. He would famously set up a small pile of flints at the start of his path, kicking one away with each lap so he wouldn't have to interrupt his deep concentration to count his exercise. He understood instinctively that his mind required the rhythmic movement of his body to function at its absolute peak.
 
+## A habit shared across the centuries
+
 He was in spectacularly good historical company. 🚶 The philosopher Immanuel Kant was so rigidly devoted to his daily afternoon walks through Königsberg that his neighbors supposedly set their clocks by his passing. Aristotle taught his students while pacing, leading to his entire philosophical school being named the "Peripatetic"—from the Greek for "given to walking about." Henry David Thoreau wrote entire essays dedicated to the spiritual necessity of sauntering, while Søren Kierkegaard claimed he "walked himself into his best thoughts." When a pattern of behavior is this consistent across centuries of human genius, it ceases to be a coincidence and becomes a blueprint.
 
-Modern neuroscience, armed with functional MRI machines, has finally caught up to this ancient, intuitive wisdom. Rigorous studies from Stanford University consistently demonstrate that walking—particularly outdoors in natural, unpaved environments—measurably and significantly boosts divergent creative thinking. The magic lies in the biomechanics. The gentle, rhythmic, semi-automatic motion of bipedal walking occupies the physical body's motor systems just enough to unhook the conscious, anxious mind. It places the brain in a state of "transient hypofrontality," quieting the inner critic and allowing the subconscious to freely associate entirely disparate ideas. 
+## What the brain scans reveal
+
+Modern neuroscience, armed with functional MRI machines, has finally caught up to this ancient, intuitive wisdom. Rigorous studies from Stanford University consistently demonstrate that walking—particularly outdoors in natural, unpaved environments—measurably and significantly boosts divergent creative thinking. The magic lies in the biomechanics. The gentle, rhythmic, semi-automatic motion of bipedal walking occupies the physical body's motor systems just enough to unhook the conscious, anxious mind. It places the brain in a state of "transient hypofrontality," quieting the inner critic and allowing the subconscious to freely associate entirely disparate ideas.
+
+## The prescription for being stuck
 
 Moreover, walking induces a state of "optic flow"—the visual sensation of objects moving past us. Neurologists have discovered that this forward physical momentum actually quiets the circuits in the amygdala responsible for stress and anxiety. A walk with no specific destination, and crucially, without headphones pumping algorithmic content into your ears, is one of the last socially acceptable forms of deep, unstructured thought. It creates the fertile, empty mental space that we now reflexively pave over with glowing screens at every red light and elevator ride. The prescription for being stuck is as ancient as humanity itself: leave your phone on the desk, step outside, and let your feet do the thinking. 🌳`
     },
@@ -146,9 +158,15 @@ This requires the deployment of monumental, utility-scale battery parks that can
       body:
 `For decades, relentless corporate culture and hyper-masculine self-help gurus treated sleep as a biological annoyance—an unfortunate, unproductive downtime to be aggressively hacked, minimized, and trimmed in the relentless pursuit of ultimate productivity. "I'll sleep when I'm dead" was worn proudly as a badge of honor by CEOs and politicians alike. But the last twenty years of modern neuroscience and sleep research point unequivocally, and somewhat terrifyingly, in the exact opposite direction. Chronic sleep deprivation is not a sign of grit; it is a slow form of cognitive suicide.
 
+## What actually happens while you sleep
+
 We now understand that sleep is not a passive absence of waking activity; it is a period of intense, incredibly crucial biological and neurological work. While you are unconscious, the brain's newly discovered "glymphatic system" physically opens up to literally wash away the toxic, metabolic waste proteins (like amyloid beta, implicated in Alzheimer's) that aggressively accumulate in the brain during waking hours. Furthermore, sleep is the exclusive state in which the brain actively replays, processes, and permanently consolidates short-term daily experiences into long-term memories. During REM sleep, the brain also completely strips the visceral, painful emotion away from difficult memories, effectively acting as overnight emotional therapy. By consistently cutting sleep short to squeeze in an extra hour of emails, we are severely undercutting the very cognitive faculties we are staying up to use.
 
+## Consistency beats a "perfect" eight hours
+
 The most robust, actionable findings from sleep researchers are also the least glamorous, which is why they are rarely sold as products. It turns out that absolute consistency matters significantly more than occasionally achieving a "perfect" eight hours. Going to bed and waking up at the exact same minute every single day—yes, even on the weekends—is the most powerful way to stabilize your circadian rhythm and avoid the brutal, cognitive fog of "social jetlag." 
+
+## The boring basics that win
 
 Exposure to bright, natural morning sunlight outdoors within an hour of waking, combined with the total absence of artificial blue light late at night, does the vast majority of the heavy lifting for your biological clock. There is absolutely no expensive supplement, specialized mattress, or wearable bio-tracking gadget that can reliably beat these fundamental, boring basics. A very cool, pitch-dark room, a rigid daily schedule, and a genuine wind-down routine consistently outperform almost everything heavily marketed to "optimize" your rest.`
     },
@@ -467,6 +485,22 @@ The ultimate result of this rigorous subtraction, when it truly works, looks inc
   function getByAuthor(authorId) { return getAll().filter((a) => a.authorId && a.authorId === authorId); }
   function getByAuthorName(name) { return getAll().filter((a) => a.author === name); }
 
+  // related stories: same tag first, then same author, then anything recent
+  function getRelated(article, n = 3) {
+    if (!article) return [];
+    const rest = getAll().filter((a) => a.id !== article.id);
+    const sameTag    = rest.filter((a) => a.tag === article.tag);
+    const sameAuthor = rest.filter((a) => a.tag !== article.tag && a.author === article.author);
+    const others     = rest.filter((a) => a.tag !== article.tag && a.author !== article.author);
+    const out = [], seen = new Set();
+    for (const a of [...sameTag, ...sameAuthor, ...others]) {
+      if (out.length >= n) break;
+      if (seen.has(a.id)) continue;
+      seen.add(a.id); out.push(a);
+    }
+    return out;
+  }
+
   /* ---- follows (client-side, keyed by author name) ---- */
   const FOLLOWS_KEY = "midium-follows";
   function getFollowedAuthors() { try { return JSON.parse(localStorage.getItem(FOLLOWS_KEY)) || []; } catch (_) { return []; } }
@@ -515,7 +549,7 @@ The ultimate result of this rigorous subtraction, when it truly works, looks inc
 
   return {
     SEED, load, getAll, getById, addArticle, updateArticle, deleteArticle,
-    getByAuthor, getByAuthorName, getFollowedAuthors, isFollowingAuthor, toggleFollowAuthor,
+    getByAuthor, getByAuthorName, getRelated, getFollowedAuthors, isFollowingAuthor, toggleFollowAuthor,
     getBookmarks, isBookmarked, toggleBookmark,
     clap, clapsFor, hasClapped, allTags, readingTime
   };
