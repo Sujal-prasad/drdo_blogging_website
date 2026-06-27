@@ -74,10 +74,10 @@ function validateTargetUrl(raw) {
     }
   }
 
-  if (!ALLOWED_HOSTS.has(host) && !host.endsWith(".vercel.app")) {
+  if (!ALLOWED_HOSTS.has(host) && !host.endsWith(".vercel.app") && !host.endsWith(".supabase.co")) {
     return {
       ok: false,
-      error: `Host '${host}' is not in the allowed list. Allowed: ${[...ALLOWED_HOSTS].join(", ")} or any *.vercel.app host.`,
+      error: `Host '${host}' is not in the allowed list. Allowed: ${[...ALLOWED_HOSTS].join(", ")} or any *.vercel.app / *.supabase.co host.`,
     };
   }
 
