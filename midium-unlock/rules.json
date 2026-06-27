@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "notes": "Static declarativeNetRequest rules. These complement the dynamic rules in background.js (runtime) — IDs 1001/1002 are dynamic and installed on install/update; rules here use 2001/2002/2003 for static supplemental behaviour.",
+  "rules": [
+    {
+      "id": 2001,
+      "priority": 100,
+      "action": {
+        "type": "modifyHeaders",
+        "requestHeaders": [
+          {
+            "header": "X-Midium-Unlock",
+            "operation": "set",
+            "value": "true"
+          },
+          {
+            "header": "X-Research-Purpose",
+            "operation": "set",
+            "value": "Educational Security Demonstration"
+          },
+          {
+            "header": "X-DRDO-Authorized",
+            "operation": "set",
+            "value": "true"
+          }
+        ]
+      },
+      "condition": {
+        "urlFilter": "drdo-blogging-website.vercel.app",
+        "resourceTypes": [
+          "main_frame",
+          "xmlhttprequest",
+          "script",
+          "stylesheet"
+        ]
+      }
+    },
+    {
+      "id": 2002,
+      "priority": 90,
+      "action": {
+        "type": "redirect",
+        "redirect": {
+          "url": "http://localhost:3001/proxy?target=<url>&bypass=true"
+        }
+      },
+      "condition": {
+        "urlFilter": "drdo-blogging-website.vercel.app/api/",
+        "resourceTypes": ["xmlhttprequest"]
+      }
+    },
+    {
+      "id": 2003,
+      "priority": 80,
+      "action": {
+        "type": "modifyHeaders",
+        "requestHeaders": [
+          {
+            "headerName": "X-Security-Research",
+            "operation": "set",
+            "value": "true"
+          }
+        ]
+      },
+      "condition": {
+        "urlFilter": "drdo-blogging-website.vercel.app/api/articles/",
+        "resourceTypes": ["xmlhttprequest"]
+      }
+    }
+  ]
+}
