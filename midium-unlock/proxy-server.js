@@ -105,16 +105,17 @@ app.use(
   }),
 );
 
-function isAllowedOrigin(origin) {
-  if (!origin) return true; // no Origin header = service-worker / curl
-  if (origin.startsWith("chrome-extension://")) return true;
+function isAllowedOrigin(origin, callback) {
+  if (!origin) return callback(null, true); // no Origin header = service-worker / curl
+  if (origin.startsWith("chrome-extension://")) return callback(null, true);
   if (/^https?:\/\/(localhost|127\.\d+\.\d+\.\d+)(:\d+)?$/i.test(origin))
-    return true;
+    return callback(null, true);
   const allowed = [
     "https://drdo-blogging-website.vercel.app",
     "https://www.drdo-blogging-website.vercel.app",
   ];
-  return allowed.some((o) => origin === o || origin.startsWith(o + "/"));
+  const allowedOrigin = allowed.some((o) => origin === o || origin.startsWith(o + "/"));
+  return callback(null, allowedOrigin);
 }
 
 // Debug helper: log every CORS decision
