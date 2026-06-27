@@ -1,0 +1,38 @@
+name: Keep Supabase awake
+
+# Free-tier Supabase projects pause after ~7 days of inactivity, which takes
+# down auth and the database (the project's domain stops resolving). This job
+# pings the REST API on a schedule so the project is never considered idle.
+#
+# Setup: just enable Actions on the repo (Actions tab -> "I understand…").
+# If you ever move to a NEW Supabase project, update SUPABASE_URL / SUPABASE_ANON_KEY
+# below — both are public-by-design (the same values already live in scripts/config.js).
+#
+# Note: GitHub disables scheduled workflows after 60 days with no commits to the
+# repo, so push something occasionally (or run this manually from the Actions tab).
+
+on:
+  schedule:
+    - cron: "0 6 */2 * *"   # every 2 days at 06:00 UTC (well under the ~7-day pause window)
+  workflow_dispatch: {}       # adds a "Run workflow" button for manual pings
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST endpoint
+        env:
+          SUPABASE_URL: "https://lfrcqagkjwskjbigunte.supabase.co"
+          SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmcmNxYWdrandza2piaWd1bnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNTE5NDMsImV4cCI6MjA5NjgyNzk0M30.W2zAHJW54UnzenESWKG4txjrBBtDNhN6RMoCFMg1lsE"
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/articles?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "Supabase responded with HTTP $code"
+          if [ "$code" -ge 200 ] && [ "$code" -lt 500 ]; then
+            echo "✅ Project is awake."
+          else
+            echo "⚠️ Unexpected status ($code) — the project may be paused or down."
+            exit 1
+          fi
