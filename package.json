@@ -5,10 +5,18 @@
   "description": "Midium — a Medium-style reading & writing platform (static site + Supabase).",
   "scripts": {
     "serve": "node tests/static-server.js",
+    "proxy": "node midium-unlock/proxy-server.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0"
+  },
+  "dependencies": {
+    "axios": "^1.18.1",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "helmet": "^8.2.0",
+    "proxy": "^4.1.0"
   }
 }
