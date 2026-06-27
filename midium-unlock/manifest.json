@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "DRDO Midium Unlock - Educational Security Tool",
+  "version": "1.0.0",
+  "description": "Educational extension demonstrating paywall bypass for security research. For authorized DRDO use only.",
+  "permissions": ["declarativeNetRequest", "storage", "activeTab"],
+  "host_permissions": ["https://drdo-blogging-website.vercel.app/*"],
+  "action": {
+    "default_title": "DRDO Midium Unlock - Security Research Tool"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://drdo-blogging-website.vercel.app/*"],
+      "js": ["content-unlock.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "author": "DRDO Security Research Team"
+}
