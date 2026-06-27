@@ -228,7 +228,39 @@ The site is fully static, so Vercel deploys it with **no build step**:
 4. Optional: add a `vercel.json` + `.gitignore` for a zero-config import.
 
 ---
+# DRDO Midium Unlock - Educational Security Extension
 
+## Overview
+
+This Chrome extension demonstrates a real-world paywall bypass vulnerability for educational and security research purposes. It's designed specifically for the DRDO internship project to showcase:
+
+- Client-side vs server-side security boundaries
+- Extension architecture and capabilities
+- Ethical hacking principles
+- Security vulnerability demonstration
+
+## 🎯 Purpose
+
+**Educational Use Only**: This extension is intended for authorized DRDO security research and educational demonstrations. It showcases how paywall protection mechanisms can be bypassed for security analysis.
+
+## 🛠️ Installation
+
+### 1. Install the Extension
+
+1. Clone this repository
+2. Open Chrome and go to `chrome://extensions/`
+3. Enable "Developer mode" (top right)
+4. Click "Load unpacked" and select the `drdo-blogging-website/midium-unlock` directory
+
+### 2. Configure Proxy Server
+
+1. Install Node.js if not already installed
+2. Navigate to the proxy-server directory:
+   ```bash
+   cd drdo-blogging-website/midium-unlock
+   npm install
+   node proxy-server.js
+   
 ## 🔒 Security
 
 - **XSS:** all user-supplied text (titles, deks, authors, comments, bodies) is
