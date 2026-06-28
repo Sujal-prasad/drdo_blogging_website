@@ -241,6 +241,8 @@
   float: left; font-family: var(--serif); font-weight: 600;
   font-size: 3.1em; line-height: .82; padding: .02em .12em 0 0; color: var(--ink);
 }
+/* invisible top-of-story marker used to trigger the paywall gate reliably */
+.gate-mark { display: block; height: 1px; margin: 0; padding: 0; }
 .article-img { width: 100%; border-radius: var(--radius); margin: 10px 0 22px; display: block; }
 .article-foot { display: flex; align-items: center; gap: 14px; padding-top: 24px; border-top: 1px solid var(--line); }
 .clap-btn {

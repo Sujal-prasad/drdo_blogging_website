@@ -166,6 +166,7 @@
     const initial = esc((a.author || "?").trim().charAt(0).toUpperCase() || "?");
     return `
       <article class="story" data-id="${esc(a.id)}">
+        <i class="gate-mark" aria-hidden="true"></i>
         <div class="article-cover" style="${coverStyle(a)}"></div>
         <span class="article-tag">${esc(a.tag)}</span>
         <h1 class="article-title">${esc(a.title)}</h1>
@@ -226,23 +227,32 @@
     tocTick();
   }
 
-  // a story scrolled into view -> now it counts (record read or show paywall)
+  // record a read / show the paywall for a story the reader has reached.
+  // Runs once per story (tracked in `seen`), independent of article length.
+  function gateStory(storyEl, a) {
+    if (!storyEl || seen.has(storyEl)) return;
+    seen.add(storyEl);
+    const gated = Paywall.gate(a, { onUnlock }); // no blur — we truncate instead
+    refreshMeter(storyEl, a);
+    if (gated) { paused = true; lockBody(storyEl); } // remove text + stop loading more
+  }
+
+  // Gate a reel-continuation story once its TOP scrolls into the upper part of the
+  // viewport. Observing a tiny top sentinel (not the whole article) makes this fire
+  // reliably even for very long articles — a ratio threshold never would.
   const viewObserver = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
-      if (!e.isIntersecting || e.intersectionRatio < 0.3) return;
-      const el = e.target;
-      if (seen.has(el)) return;
-      seen.add(el);
-      viewObserver.unobserve(el);
+      if (!e.isIntersecting) return;
+      const el = e.target.closest(".story");
+      if (!el) return;
+      viewObserver.unobserve(e.target);
       const a = all.find((x) => x.id === el.dataset.id);
-      if (!a) return;
-      const gated = Paywall.gate(a, { onUnlock }); // no blur — we truncate instead
-      refreshMeter(el, a);
-      if (gated) { paused = true; lockBody(el); } // remove text + stop loading more
+      if (a) gateStory(el, a);
     });
-  }, { threshold: [0, 0.3] });
+  }, { rootMargin: "0px 0px -55% 0px", threshold: 0 });
 
   function mountStory(a) {
+    const isFirst = first; // the article the reader actually opened (vs. reel continuation)
     if (!first) {
       const sep = document.createElement("div");
       sep.className = "story-sep";
@@ -294,7 +304,8 @@
     if (a.authorId && window.Social) renderComments(storyEl.querySelector(".comments"), a);
 
     refreshMeter(storyEl, a);
-    viewObserver.observe(storyEl); // gate when it scrolls into view
+    if (isFirst) gateStory(storyEl, a);                              // opened article: count/lock right away (survives refresh)
+    else viewObserver.observe(storyEl.querySelector(".gate-mark")); // others: count when scrolled to
     tocTick(); // refresh progress + TOC now there's new content
   }
 

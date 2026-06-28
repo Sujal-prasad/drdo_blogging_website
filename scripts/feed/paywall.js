@@ -21,8 +21,9 @@ window.Paywall = (function () {
   function setMember(v) { localStorage.setItem(MEMBER_KEY, v ? "true" : "false"); }
   // cancel membership and reset the free-article allowance back to a fresh 5
   function cancel() { setMember(false); localStorage.removeItem(READS_KEY); }
-  // clear all paywall state (used on sign out)
-  function clearState() { setMember(false); localStorage.removeItem(READS_KEY); }
+  // used on sign out: drop membership, but KEEP the free-read tally so logging
+  // out and back in (or refreshing) can't hand out a fresh batch of free reads.
+  function clearState() { setMember(false); }
   function remainingFree() { return Math.max(0, FREE_LIMIT - getReads().length); }
   function recordRead(id) { const r = getReads(); if (!r.includes(id)) { r.push(id); saveReads(r); } }
 
